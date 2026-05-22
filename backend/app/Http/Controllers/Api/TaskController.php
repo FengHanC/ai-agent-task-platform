@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
@@ -36,7 +37,7 @@ class TaskController extends Controller
         }
 
         $tasks = $query->latest()->paginate(
-            perPage: min((int) $request->input('per_page', 15), 100),
+            perPage: max(1, min((int) $request->input('per_page', 15), 100)),
         );
 
         return response()->json([
@@ -66,14 +67,6 @@ class TaskController extends Controller
             'assigned_agent_id' => $data['assigned_agent_id'] ?? null,
             'metadata' => $data['metadata'] ?? null,
         ]);
-
-        // 如果指定了 Agent 且可用，自动指派
-        if (!empty($data['assigned_agent_id'])) {
-            $agent = Agent::find($data['assigned_agent_id']);
-            if ($agent && $agent->isAvailable()) {
-                $task->assignTo($agent);
-            }
-        }
 
         $task->load('agent');
 
@@ -158,7 +151,7 @@ class TaskController extends Controller
         // 如果之前指派给别的 Agent，先解除旧的
         if ($task->assigned_agent_id && $task->assigned_agent_id !== $agent->id && $task->status === 'processing') {
             $oldAgent = Agent::find($task->assigned_agent_id);
-            if ($oldAgent) {
+            if ($oldAgent && $oldAgent->current_tasks > 0) {
                 $oldAgent->decrementTaskCount();
             }
         }
@@ -203,7 +196,11 @@ class TaskController extends Controller
                         'message' => '指派的 Agent 不存在',
                     ], 422);
                 }
-                $task->assignTo($agent);
+                $task->update([
+                    'status' => 'processing',
+                    'started_at' => now(),
+                ]);
+                $agent->incrementTaskCount();
                 break;
 
             case 'completed':
@@ -230,11 +227,7 @@ class TaskController extends Controller
                         'message' => '只有待处理或进行中的任务可以取消',
                     ], 422);
                 }
-                // 如果进行中被取消，释放 Agent 计数
-                if ($task->status === 'processing' && $task->agent) {
-                    $task->agent->decrementTaskCount();
-                }
-                $task->update(['status' => 'cancelled', 'completed_at' => now()]);
+                $task->markCancelled();
                 break;
         }
 
