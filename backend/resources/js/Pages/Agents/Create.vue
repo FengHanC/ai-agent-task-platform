@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3'
+import { Link, useForm, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
@@ -150,6 +150,10 @@ function toggleCapability(value) {
 }
 
 function submit() {
-    form.post('/agents')
+    form.post('/api/v1/agents', {
+        onSuccess: () => {
+            router.visit('/agents')
+        }
+    })
 }
 </script>
