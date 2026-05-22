@@ -50,15 +50,15 @@
                             </div>
                         </div>
                     </Link>
-                    <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 p-6 opacity-50">
+                    <Link href="/tasks" class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow group">
                         <div class="flex items-center space-x-4">
-                            <span class="text-4xl">📋</span>
+                            <span class="text-4xl group-hover:scale-110 transition-transform">📋</span>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">任务管理</h3>
-                                <p class="text-sm text-gray-500">功能开发中...</p>
+                                <p class="text-sm text-gray-500">创建、管理和指派 AI 任务</p>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 <!-- 最近活动 -->
