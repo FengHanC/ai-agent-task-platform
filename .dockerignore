@@ -1,0 +1,8 @@
+/.env
+/backend/node_modules/
+/backend/vendor/
+/backend/storage/
+/backend/bootstrap/cache/
+*.log
+.idea/
+.vscode/
