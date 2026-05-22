@@ -74,4 +74,15 @@ class Task extends Model
             $this->agent->decrementTaskCount();
         }
     }
+
+    public function markCancelled(): void
+    {
+        if ($this->status === 'processing' && $this->agent) {
+            $this->agent->decrementTaskCount();
+        }
+        $this->update([
+            'status' => 'cancelled',
+            'completed_at' => now(),
+        ]);
+    }
 }
