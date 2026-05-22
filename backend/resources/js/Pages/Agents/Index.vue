@@ -155,7 +155,7 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
     agents: { type: Object, required: true },
-    filters: { type: Object, required: true },
+    filters: { type: Object, default: () => ({ status: 'all' }) },
 })
 
 const statusOptions = [
