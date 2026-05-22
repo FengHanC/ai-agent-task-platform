@@ -30,6 +30,16 @@
                             >
                                 🤖 Agent 管理
                             </Link>
+                            <Link
+                                href="/tasks"
+                                :class="['px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                                    isActive('/tasks')
+                                        ? 'bg-indigo-50 text-indigo-700'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                ]"
+                            >
+                                📋 任务管理
+                            </Link>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
