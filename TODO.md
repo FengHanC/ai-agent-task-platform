@@ -4,6 +4,14 @@
 
 ---
 
+## 🏗 架构说明
+
+当前使用 **Inertia.js 全栈架构**，Vue 前端代码在 `backend/resources/js/` 内，由 Laravel 直接渲染。这不是前后端分离架构。
+
+**后续可考虑重构为前后端分离：** 将前端拆为独立 Vite 项目，使用 Vue Router + Axios + Laravel Sanctum（JWT 认证）。但建议待 MVP 功能稳定后再做。
+
+---
+
 ## Sprint 0: 项目初始化 ✅
 
 | # | 任务 | 负责人 | 状态 | 提交 |
@@ -44,17 +52,19 @@
 
 ---
 
-## Sprint 3: 消息聚合与实时推送 ✅
+## Sprint 3: 消息聚合与实时推送 🟡
 
-| # | 任务 | 负责人 | 状态 | 提交 |
+| # | 任务 | 负责人 | 状态 | 备注 |
 |---|------|--------|------|------|
-| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ✅ | `52fcafe` |
-| 3.2 | WebSocket 广播事件 (TaskStatusChanged) | Agent-B | ✅ | `52fcafe` |
-| 3.3 | 私有频道授权 (channels.php) | Agent-B | ✅ | `52fcafe` |
-| 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | `b6314b1` |
-| 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | `b6314b1` |
-| 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | `b6314b1` |
-| 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | `b6314b1` |
+| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ❌ 未完成 | commit `52fcafe` 不存在，需补做 |
+| 3.2 | WebSocket 广播事件 (TaskStatusChanged) | Agent-B | ❌ 未完成 | 同上 |
+| 3.3 | 私有频道授权 (channels.php) | Agent-B | ❌ 未完成 | 同上 |
+| 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | commit `b6314b1` |
+| 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | commit `b6314b1` |
+| 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | commit `b6314b1` |
+| 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | commit `b6314b1` |
+
+> ⚠️ 3.1-3.3 虽然标记为完成，但实际仓库中无对应代码，待补充。
 
 ---
 
@@ -62,11 +72,11 @@
 
 | # | 任务 | 负责人 | 状态 | 优先级 |
 |---|------|--------|------|--------|
-| 4.1 | 用户认证系统 (登录/注册/登出) | Agent-B | ⏳ | P0 |
+| 4.1 | 用户认证系统 (登录/注册/登出) | Agent-B | ✅ | P0 |
 | 4.2 | Agent 自动指派策略 (按能力 + 负载均衡) | Agent-B | ⏳ | P1 |
 | 4.3 | WebSocket 前端实时集成 (Echo + Reverb) | Agent-F | ⏳ | P1 |
 | 4.4 | 单元测试 (PHPUnit + Pest) | Agent-B | ⏳ | P1 |
-| 4.5 | UI/UX 优化 (响应式 + 加载状态 + 空状态) | Agent-F | ⏳ | P2 |
+| 4.5 | UI/UX 优化 (响应式 + Toast 通知) | Agent-F | ✅ | P2 |
 | 4.6 | 国际化 (i18n 中英文切换) | Agent-F | ⏳ | P2 |
 | 4.7 | CI/CD (GitHub Actions 自动测试 + 部署) | Coordinator | ⏳ | P2 |
 | 4.8 | API 文档 (Swagger/OpenAPI) | Agent-B | ⏳ | P3 |
@@ -87,15 +97,27 @@
 
 ---
 
+## Sprint 6: 架构优化 (未来计划)
+
+| # | 任务 | 说明 | 优先级 |
+|---|------|------|--------|
+| 6.1 | 前后端拆分 | 前端独立为 Vite 项目，Vue Router 替代 Inertia | P3 |
+| 6.2 | JWT 认证 | Laravel Sanctum Token 替代 Session | P3 |
+| 6.3 | CORS 配置 | 前端独立部署时的跨域配置 | P3 |
+
+---
+
 ## 总进度
 
 ```
-Sprint 0 (初始化):     ████████████████████ 100% ✅
-Sprint 1 (Agent 管理):  ████████████████████ 100% ✅
-Sprint 2 (任务管理):    ████████████████████ 100% ✅
-Sprint 3 (消息推送):    ████████████████████ 100% ✅
-Sprint 4 (优化完善):    ░░░░░░░░░░░░░░░░░░░░   0% ⏳
-Sprint 5 (高级功能):    ░░░░░░░░░░░░░░░░░░░░   0% ⏳
+Sprint 0 (初始化):       ████████████████████ 100% ✅
+Sprint 1 (Agent 管理):   ████████████████████ 100% ✅
+Sprint 2 (任务管理):     ████████████████████ 100% ✅
+Sprint 3 (消息推送):     ████████████████░░░░  70% 🟡
+Sprint 4a (UI 优化):     ████████████████████ 100% ✅
+Sprint 4b (用户认证):    ████████████████████ 100% ✅
+Sprint 4c (其他优化):    ░░░░░░░░░░░░░░░░░░░░   0% ⏳
+Sprint 5 (高级功能):     ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 ```
 
-**MVP 完成度: 80%** (核心功能 Agent 管理 + 任务管理 + 消息聚合已完成)
+**MVP 完成度: 75%** (核心功能 Agent + 任务管理完成，消息后端子任务待补)
