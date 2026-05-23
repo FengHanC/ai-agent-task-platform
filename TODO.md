@@ -71,7 +71,7 @@
 | 4.1 | 用户认证系统 (登录/注册/登出) | Agent-B | ✅ | P0 |
 | 4.2 | Agent 自动指派策略 (按能力 + 负载均衡) | Agent-B | ✅ | - |
 | 4.3 | WebSocket 前端实时集成 (Echo + Reverb) | Agent-F | ⏳ | P1 |
-| 4.4 | 单元测试 (PHPUnit + Pest) | Agent-B | ⏳ | P1 |
+|| 4.4 | 单元测试 (PHPUnit + Pest) | Agent-B | ✅ | P1 |
 | 4.5 | UI/UX 优化 (响应式 + Toast 通知) | Agent-F | ✅ | P2 |
 | 4.6 | 国际化 (i18n 中英文切换) | Agent-F | ⏳ | P2 |
 | 4.7 | CI/CD (GitHub Actions 自动测试 + 部署) | Coordinator | ⏳ | P2 |
