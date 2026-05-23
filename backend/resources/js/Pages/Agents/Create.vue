@@ -193,7 +193,10 @@ async function submit() {
         }
 
         toastSuccess('Agent 创建成功')
-        router.visit('/agents')
+
+        // 跳转到新 Agent 详情页
+        const agentId = data.data?.id
+        router.visit(agentId ? `/agents/${agentId}` : '/agents')
     } catch (e) {
         errors._general = '网络错误，请重试'
     } finally {

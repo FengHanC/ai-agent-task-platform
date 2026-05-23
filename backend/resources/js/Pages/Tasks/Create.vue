@@ -167,7 +167,10 @@ async function submit() {
         }
 
         toastSuccess('任务创建成功')
-        router.visit('/tasks')
+
+        // 跳转到新任务的详情页，用户可立即进行指派操作
+        const taskId = data.data?.id
+        router.visit(taskId ? `/tasks/${taskId}` : '/tasks')
     } catch (e) {
         errors._general = '网络错误，请重试'
     } finally {

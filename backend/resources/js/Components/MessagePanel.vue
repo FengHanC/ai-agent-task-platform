@@ -1,6 +1,17 @@
 <template>
     <div class="flex flex-col">
-        <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">任务消息</h2>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider">任务消息</h2>
+            <!-- WebSocket 连接状态 -->
+            <span
+                v-if="!echoConnected"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                title="实时连接未启用，消息可能延迟显示"
+            >
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                离线模式
+            </span>
+        </div>
 
         <!-- 消息列表 -->
         <div ref="messageContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 mb-4">
@@ -58,7 +69,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useTaskChannel } from '@/composables/useTaskChannel'
+import { useTaskChannel, echoConnected } from '@/composables/useTaskChannel'
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
