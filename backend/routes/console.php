@@ -12,3 +12,8 @@ Artisan::command('inspire', function () {
 Schedule::command('agents:check-heartbeats --timeout=120')
     ->everyMinute()
     ->withoutOverlapping();
+
+// 任务超时检查：每分钟检查处理中超时的任务，30 分钟无进展则标记失败
+Schedule::command('tasks:check-timeouts --timeout=30')
+    ->everyMinute()
+    ->withoutOverlapping();

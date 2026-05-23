@@ -86,6 +86,18 @@ class Task extends Model
         }
     }
 
+    public function markTimedOut(): void
+    {
+        $this->update([
+            'status' => 'failed',
+            'completed_at' => now(),
+        ]);
+        if ($this->agent) {
+            $this->agent->decrementTaskCount();
+        }
+        $this->addMessage('任务处理超时，系统自动标记为失败。', 'system');
+    }
+
     public function markCancelled(): void
     {
         if ($this->status === 'processing' && $this->agent) {
