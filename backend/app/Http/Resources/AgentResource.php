@@ -23,6 +23,7 @@ class AgentResource extends JsonResource
             'max_capacity' => $this->max_capacity,
             'current_tasks' => $this->current_tasks,
             'is_available' => $this->isAvailable(),
+            'last_heartbeat_at' => $this->last_heartbeat_at?->toISOString(),
             'metadata' => $this->metadata ?? [],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

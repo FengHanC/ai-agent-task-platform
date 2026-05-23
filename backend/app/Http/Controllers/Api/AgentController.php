@@ -108,4 +108,23 @@ class AgentController extends Controller
             'message' => 'Agent 已删除',
         ]);
     }
+
+    /**
+     * 心跳检测 — Agent 报告自己在线
+     *
+     * @bodyParam timeout int 可选，自定义超时秒数（默认 120）
+     */
+    public function heartbeat(Agent $agent): JsonResponse
+    {
+        $agent->heartbeat();
+
+        return response()->json([
+            'message' => '心跳已更新',
+            'data' => [
+                'agent_id' => $agent->id,
+                'status' => $agent->fresh()->status,
+                'last_heartbeat_at' => $agent->fresh()->last_heartbeat_at?->toISOString(),
+            ],
+        ]);
+    }
 }
