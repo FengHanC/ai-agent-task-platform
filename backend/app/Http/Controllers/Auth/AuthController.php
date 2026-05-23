@@ -36,7 +36,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => '邮箱或密码错误',
+                'error' => '邮箱或密码错误',
             ]);
         }
 
