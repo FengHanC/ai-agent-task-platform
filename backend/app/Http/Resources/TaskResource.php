@@ -34,6 +34,9 @@ class TaskResource extends JsonResource
                         'type' => $message->type,
                         'content' => $message->content,
                         'agent_id' => $message->agent_id,
+                        'agent_name' => $message->relationLoaded('agent') && $message->agent
+                            ? $message->agent->name
+                            : null,
                         'created_at' => $message->created_at?->toISOString(),
                     ];
                 });
