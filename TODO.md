@@ -54,17 +54,15 @@
 
 ## Sprint 3: 消息聚合与实时推送 ✅
 
-| # | 任务 | 负责人 | 状态 | 备注 |
-|---|------|--------|------|------|
-| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ✅ | `965ad14` |
-| 3.2 | WebSocket 广播事件 (TaskStatusChanged) | Agent-B | ⏳ | 后续补充 |
-| 3.3 | 私有频道授权 (channels.php) | Agent-B | ⏳ | 后续补充 |
+| # | 任务 | 负责人 | 状态 | PR |
+|---|------|--------|------|----|
+| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ✅ | #9 |
+| 3.2 | WebSocket 广播事件 (TaskStatusChanged + MessageSent) | Agent-B | ✅ | #9 |
+| 3.3 | 私有频道授权 (channels.php) | Agent-B | ✅ | #9 |
 | 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | `b6314b1` |
 | 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | `b6314b1` |
 | 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | `b6314b1` |
 | 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | `b6314b1` |
-
----
 
 ## Sprint 4: 优化与完善 ⏳
 
@@ -118,4 +116,4 @@ Sprint 4c (其他优化):    ░░░░░░░░░░░░░░░░░
 Sprint 5 (高级功能):     ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 ```
 
-**MVP 完成度: 80%** (核心功能 Agent + 任务管理 + 消息聚合已完成)
+**MVP 完成度: 85%** (核心功能全部完成，后续优化中)
