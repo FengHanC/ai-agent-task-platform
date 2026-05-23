@@ -10,25 +10,25 @@
                 <!-- Agent 信息卡片 -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <!-- 头部 -->
-                    <div class="p-6 border-b border-gray-100">
-                        <div class="flex items-start justify-between">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
+                    <div class="p-4 sm:p-6 border-b border-gray-100">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                            <div class="flex items-center space-x-3 sm:space-x-4">
+                                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg sm:text-xl flex-shrink-0">
                                     {{ agent.name.charAt(0).toUpperCase() }}
                                 </div>
-                                <div>
-                                    <h1 class="text-2xl font-bold text-gray-900">{{ agent.name }}</h1>
-                                    <p v-if="agent.description" class="mt-1 text-sm text-gray-500">{{ agent.description }}</p>
+                                <div class="min-w-0">
+                                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 break-words">{{ agent.name }}</h1>
+                                    <p v-if="agent.description" class="mt-1 text-sm text-gray-500 break-words">{{ agent.description }}</p>
                                 </div>
                             </div>
-                            <span :class="statusBadgeClass(agent.status)">
+                            <span :class="statusBadgeClass(agent.status)" class="self-start flex-shrink-0">
                                 {{ statusLabel(agent.status) }}
                             </span>
                         </div>
                     </div>
 
                     <!-- 信息详情 -->
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <!-- 基本信息 -->
                         <div>
                             <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">基本信息</h2>
@@ -45,11 +45,11 @@
                                 </div>
                                 <div class="flex justify-between">
                                     <dt class="text-sm text-gray-500">创建时间</dt>
-                                    <dd class="text-sm text-gray-900">{{ agent.created_at }}</dd>
+                                    <dd class="text-sm text-gray-900">{{ formatDate(agent.created_at) }}</dd>
                                 </div>
                                 <div class="flex justify-between">
                                     <dt class="text-sm text-gray-500">更新时间</dt>
-                                    <dd class="text-sm text-gray-900">{{ agent.updated_at }}</dd>
+                                    <dd class="text-sm text-gray-900">{{ formatDate(agent.updated_at) }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -91,7 +91,7 @@
                                 <span
                                     v-for="cap in agent.capabilities"
                                     :key="cap"
-                                    class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 ring-1 ring-blue-200"
+                                    class="inline-flex items-center px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium bg-blue-50 text-blue-700 ring-1 ring-blue-200"
                                 >
                                     {{ capabilityLabel(cap) }}
                                 </span>
@@ -102,26 +102,26 @@
                 </div>
 
                 <!-- 关联任务 -->
-                <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-900">最近任务</h2>
+                <div class="mt-6 sm:mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-4 sm:px-6 py-4 border-b border-gray-100">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-900">最近任务</h2>
                     </div>
                     <div v-if="agent.tasks && agent.tasks.length > 0" class="divide-y divide-gray-100">
-                        <div v-for="task in agent.tasks" :key="task.id" class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-lg">{{ typeIcon(task.type) }}</span>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ task.title }}</p>
-                                    <p class="text-xs text-gray-500">{{ task.created_at }}</p>
+                        <div v-for="task in agent.tasks" :key="task.id" class="px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between hover:bg-gray-50">
+                            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                                <span class="text-base sm:text-lg flex-shrink-0">{{ typeIcon(task.type) }}</span>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ task.title }}</p>
+                                    <p class="text-xs text-gray-500">{{ formatDate(task.created_at) }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
                                 <span :class="priorityBadge(task.priority)" class="text-xs">{{ task.priority }}</span>
                                 <span :class="taskStatusBadge(task.status)" class="text-xs">{{ taskStatusLabel(task.status) }}</span>
                             </div>
                         </div>
                     </div>
-                    <div v-else class="px-6 py-8 text-center">
+                    <div v-else class="px-4 sm:px-6 py-6 sm:py-8 text-center">
                         <p class="text-sm text-gray-400">暂无关联任务</p>
                     </div>
                 </div>
@@ -197,6 +197,13 @@ function taskStatusBadge(status) {
         cancelled: 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-gray-200',
     }
     return map[status] || map.pending
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const pad = n => String(n).padStart(2, '0')
+    return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 const loadPercent = computed(() => {

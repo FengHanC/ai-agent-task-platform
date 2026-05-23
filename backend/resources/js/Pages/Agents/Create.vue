@@ -11,15 +11,9 @@
                     <p class="mt-1 text-sm text-gray-500">注册一个新的 AI Agent 到平台</p>
                 </div>
 
-                <!-- 提示消息 -->
-                <div v-if="$page.props.flash?.success" class="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700">
-                    {{ $page.props.flash.success }}
-                </div>
-
                 <!-- 表单 -->
                 <form @submit.prevent="submit" class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="p-6 space-y-6">
-
+                    <div class="p-4 sm:p-6 space-y-5 sm:space-y-6">
                         <!-- Agent 名称 -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
@@ -53,7 +47,7 @@
                         <!-- 能力标签 -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">能力标签</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                                 <label
                                     v-for="option in capabilityOptions"
                                     :key="option.value"
@@ -68,7 +62,7 @@
                                         :value="option.value"
                                         :checked="isCapabilitySelected(option.value)"
                                         @change="toggleCapability(option.value)"
-                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded flex-shrink-0"
                                     />
                                     <span class="ml-2 text-sm text-gray-700">{{ option.label }}</span>
                                 </label>
@@ -87,7 +81,7 @@
                                 type="number"
                                 min="1"
                                 max="100"
-                                :class="['w-32 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                                :class="['w-full sm:w-32 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
                                     form.errors.max_capacity ? 'border-red-300 bg-red-50' : 'border-gray-300']"
                             />
                             <p v-if="form.errors.max_capacity" class="mt-1 text-xs text-red-600">{{ form.errors.max_capacity }}</p>
@@ -96,10 +90,10 @@
                     </div>
 
                     <!-- 提交按钮 -->
-                    <div class="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-200 flex items-center justify-end space-x-3">
+                    <div class="px-4 sm:px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 sm:space-x-3 sm:gap-0">
                         <Link
                             href="/agents"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            class="text-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             取消
                         </Link>

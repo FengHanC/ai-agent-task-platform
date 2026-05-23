@@ -11,14 +11,9 @@
                     <p class="mt-1 text-sm text-gray-500">创建一个新任务分发给 Agent</p>
                 </div>
 
-                <!-- Flash 消息 -->
-                <div v-if="$page.props.flash?.success" class="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700">
-                    {{ $page.props.flash.success }}
-                </div>
-
                 <!-- 表单 -->
                 <form @submit.prevent="submit" class="bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div class="p-6 space-y-6">
+                    <div class="p-4 sm:p-6 space-y-5 sm:space-y-6">
                         <!-- 标题 -->
                         <div>
                             <label for="title" class="block text-sm font-medium text-gray-700 mb-1">
@@ -88,10 +83,10 @@
                     </div>
 
                     <!-- 操作按钮 -->
-                    <div class="px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-200 flex items-center justify-end space-x-3">
+                    <div class="px-4 sm:px-6 py-4 bg-gray-50 rounded-b-xl border-t border-gray-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 sm:space-x-3 sm:gap-0">
                         <Link
                             href="/tasks"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            class="text-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             取消
                         </Link>
@@ -117,10 +112,6 @@
 <script setup>
 import { Link, useForm, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-
-const props = defineProps({
-    // 未使用 props，所有选项硬编码
-})
 
 const typeOptions = [
     { value: 'code', label: '💻 代码' },
