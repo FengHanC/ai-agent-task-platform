@@ -179,28 +179,13 @@
                         </div>
                     </div>
 
-                    <!-- 消息列表 -->
+                    <!-- 消息聚合面板 -->
                     <div class="px-6 py-4">
-                        <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">任务消息</h2>
-                        <div v-if="task.messages && task.messages.length > 0" class="space-y-3">
-                            <div
-                                v-for="msg in task.messages"
-                                :key="msg.id"
-                                :class="['p-3 rounded-lg text-sm',
-                                    msg.type === 'system' ? 'bg-gray-50 text-gray-600' :
-                                    msg.type === 'agent' ? 'bg-blue-50 text-blue-800' :
-                                    msg.type === 'user' ? 'bg-green-50 text-green-800' :
-                                    'bg-red-50 text-red-800'
-                                ]"
-                            >
-                                <div class="flex items-start justify-between">
-                                    <span class="font-medium">{{ msgTypeLabel(msg.type) }}</span>
-                                    <span class="text-xs text-gray-400">{{ msg.created_at }}</span>
-                                </div>
-                                <p class="mt-1">{{ msg.content }}</p>
-                            </div>
-                        </div>
-                        <p v-else class="text-sm text-gray-400">暂无消息</p>
+                        <MessagePanel
+                            :messages="task.messages || []"
+                            :task-id="task.id"
+                            @message-sent="refreshMessages"
+                        />
                     </div>
                 </div>
             </div>
@@ -212,6 +197,7 @@
 import { ref, computed } from 'vue'
 import { Link, useForm, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import MessagePanel from '@/Components/MessagePanel.vue'
 
 const props = defineProps({
     task: { type: Object, default: () => ({ title: '', status: '', type: '', priority: '', description: '', created_at: '', started_at: '', agent: null, messages: [] }) },
@@ -299,6 +285,10 @@ function statusBadge(status) {
 function agentStatusLabel(status) {
     const map = { online: '在线', offline: '离线', busy: '忙碌' }
     return map[status] || status
+}
+
+function refreshMessages() {
+    router.reload({ preserveScroll: true, preserveState: true })
 }
 
 function agentStatusBadge(status) {

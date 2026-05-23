@@ -61,14 +61,9 @@
                     </Link>
                 </div>
 
-                <!-- 最近活动 -->
-                <div class="mt-8 bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <h2 class="text-lg font-semibold text-gray-900">最近活动</h2>
-                    </div>
-                    <div class="px-6 py-8 text-center">
-                        <p class="text-sm text-gray-400">暂无活动记录</p>
-                    </div>
+                <!-- 活动日志 -->
+                <div class="mt-8">
+                    <ActivityLog :activities="activities" />
                 </div>
             </div>
         </div>
@@ -79,6 +74,11 @@
 import { reactive } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import ActivityLog from '@/Components/ActivityLog.vue'
+
+const props = defineProps({
+    activities: { type: Array, default: () => [] },
+})
 
 const stats = reactive({
     pending: 0,
