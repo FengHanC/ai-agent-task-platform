@@ -94,7 +94,7 @@
                             <div v-if="showAssignForm" class="mt-2">
                                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
                                     <select
-                                        v-model="assignForm.agent_id"
+                                        v-model="assignAgentId"
                                         class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
                                     >
                                         <option value="" disabled>选择一个 Agent...</option>
@@ -109,14 +109,14 @@
                                     <div class="flex space-x-2">
                                         <button
                                             @click="submitAssign"
-                                            :disabled="assignForm.processing || !assignForm.agent_id"
+                                            :disabled="assigning || !assignAgentId"
                                             :class="['flex-1 sm:flex-none px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors',
-                                                assignForm.processing || !assignForm.agent_id
+                                                assigning || !assignAgentId
                                                     ? 'bg-indigo-400 cursor-not-allowed'
                                                     : 'bg-indigo-600 hover:bg-indigo-700'
                                             ]"
                                         >
-                                            {{ assignForm.processing ? '指派中...' : '指派' }}
+                                            {{ assigning ? '指派中...' : '指派' }}
                                         </button>
                                         <button
                                             @click="showAssignForm = false"
@@ -126,7 +126,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <p v-if="assignForm.errors.agent_id" class="text-xs text-red-600">{{ assignForm.errors.agent_id }}</p>
+                            <!-- 错误通过 Toast 显示 -->
                                 <p v-if="availableAgents.length === 0" class="text-xs text-amber-600">
                                     ⚠️ 当前没有可用的 Agent
                                 </p>
@@ -140,14 +140,14 @@
                             <template v-if="task.status === 'pending'">
                                 <button
                                     @click="updateStatus('processing')"
-                                    :disabled="statusForm.processing"
+                                    :disabled="statusChanging"
                                     class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 ring-1 ring-blue-200 transition-colors"
                                 >
-                                    {{ statusForm.processing ? '处理中...' : '▶ 开始任务' }}
+                                    {{ statusChanging ? '处理中...' : '▶ 开始任务' }}
                                 </button>
                                 <button
                                     @click="updateStatus('cancelled')"
-                                    :disabled="statusForm.processing"
+                                    :disabled="statusChanging"
                                     class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 ring-1 ring-gray-200 transition-colors"
                                 >
                                     取消任务
@@ -156,14 +156,14 @@
                             <template v-if="task.status === 'processing'">
                                 <button
                                     @click="updateStatus('completed')"
-                                    :disabled="statusForm.processing"
+                                    :disabled="statusChanging"
                                     class="px-4 py-2 text-sm font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 ring-1 ring-green-200 transition-colors"
                                 >
-                                    {{ statusForm.processing ? '处理中...' : '✅ 标记完成' }}
+                                    {{ statusChanging ? '处理中...' : '✅ 标记完成' }}
                                 </button>
                                 <button
                                     @click="updateStatus('failed')"
-                                    :disabled="statusForm.processing"
+                                    :disabled="statusChanging"
                                     class="px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 ring-1 ring-red-200 transition-colors"
                                 >
                                     ❌ 标记失败
@@ -188,9 +188,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Link, useForm, router } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import MessagePanel from '@/Components/MessagePanel.vue'
+import { useToast } from '@/composables/useToast'
+
+const { success: toastSuccess, error: toastError } = useToast()
 
 const props = defineProps({
     task: { type: Object, default: () => ({ title: '', status: '', type: '', priority: '', description: '', created_at: '', started_at: '', agent: null, messages: [] }) },
@@ -198,34 +201,71 @@ const props = defineProps({
 })
 
 const showAssignForm = ref(false)
+const assignAgentId = ref('')
+const assigning = ref(false)
+const statusChanging = ref(false)
 
-const assignForm = useForm({
-    agent_id: '',
-})
+async function submitAssign() {
+    if (!assignAgentId.value || assigning.value) return
+    assigning.value = true
 
-function submitAssign() {
-    if (!assignForm.agent_id) return
-    assignForm.post(`/api/v1/tasks/${props.task.id}/assign`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            showAssignForm.value = false
-            router.visit(`/tasks/${props.task.id}`, { preserveState: true })
-        },
-    })
+    try {
+        const res = await fetch(`/api/v1/tasks/${props.task.id}/assign`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ agent_id: assignAgentId.value }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            toastError(data.message || '指派失败')
+            return
+        }
+
+        toastSuccess(data.message || '指派成功')
+        showAssignForm.value = false
+        router.visit(`/tasks/${props.task.id}`, { preserveState: true })
+    } catch (e) {
+        toastError('网络错误，请重试')
+    } finally {
+        assigning.value = false
+    }
 }
 
-const statusForm = useForm({
-    status: '',
-})
+async function updateStatus(status) {
+    if (statusChanging.value) return
+    statusChanging.value = true
 
-function updateStatus(status) {
-    statusForm.status = status
-    statusForm.post(`/api/v1/tasks/${props.task.id}/status`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            router.visit(`/tasks/${props.task.id}`, { preserveState: true })
-        },
-    })
+    try {
+        const res = await fetch(`/api/v1/tasks/${props.task.id}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ status }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            toastError(data.message || '操作失败')
+            return
+        }
+
+        toastSuccess(data.message || '状态已更新')
+        router.visit(`/tasks/${props.task.id}`, { preserveState: true })
+    } catch (e) {
+        toastError('网络错误，请重试')
+    } finally {
+        statusChanging.value = false
+    }
 }
 
 const showStatusActions = computed(() => {
