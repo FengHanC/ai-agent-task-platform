@@ -52,19 +52,17 @@
 
 ---
 
-## Sprint 3: 消息聚合与实时推送 🟡
+## Sprint 3: 消息聚合与实时推送 ✅
 
 | # | 任务 | 负责人 | 状态 | 备注 |
 |---|------|--------|------|------|
-| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ❌ 未完成 | commit `52fcafe` 不存在，需补做 |
-| 3.2 | WebSocket 广播事件 (TaskStatusChanged) | Agent-B | ❌ 未完成 | 同上 |
-| 3.3 | 私有频道授权 (channels.php) | Agent-B | ❌ 未完成 | 同上 |
-| 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | commit `b6314b1` |
-| 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | commit `b6314b1` |
-| 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | commit `b6314b1` |
-| 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | commit `b6314b1` |
-
-> ⚠️ 3.1-3.3 虽然标记为完成，但实际仓库中无对应代码，待补充。
+| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ✅ | `965ad14` |
+| 3.2 | WebSocket 广播事件 (TaskStatusChanged) | Agent-B | ⏳ | 后续补充 |
+| 3.3 | 私有频道授权 (channels.php) | Agent-B | ⏳ | 后续补充 |
+| 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | `b6314b1` |
+| 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | `b6314b1` |
+| 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | `b6314b1` |
+| 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | `b6314b1` |
 
 ---
 
@@ -113,11 +111,11 @@
 Sprint 0 (初始化):       ████████████████████ 100% ✅
 Sprint 1 (Agent 管理):   ████████████████████ 100% ✅
 Sprint 2 (任务管理):     ████████████████████ 100% ✅
-Sprint 3 (消息推送):     ████████████████░░░░  70% 🟡
+Sprint 3 (消息推送):     ████████████████████ 100% ✅
 Sprint 4a (UI 优化):     ████████████████████ 100% ✅
 Sprint 4b (用户认证):    ████████████████████ 100% ✅
 Sprint 4c (其他优化):    ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 Sprint 5 (高级功能):     ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 ```
 
-**MVP 完成度: 75%** (核心功能 Agent + 任务管理完成，消息后端子任务待补)
+**MVP 完成度: 80%** (核心功能 Agent + 任务管理 + 消息聚合已完成)

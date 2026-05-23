@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
+use App\Models\Message;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,16 +13,14 @@ use Illuminate\Http\Request;
 class MessageController extends Controller
 {
     /**
-     * 获取任务消息列表（按时间倒序）
+     * 获取任务的消息列表
      */
     public function index(Task $task): JsonResponse
     {
         $messages = $task->messages()
             ->with('agent')
-            ->latest('created_at')
-            ->paginate(
-                perPage: max(1, min((int) request('per_page', 50), 200)),
-            );
+            ->latest()
+            ->paginate(min((int) request('per_page', 50), 200));
 
         return response()->json([
             'data' => MessageResource::collection($messages),
@@ -35,19 +34,25 @@ class MessageController extends Controller
     }
 
     /**
-     * 发送消息
+     * 发送消息到任务
+     *
+     * @bodyParam content string required 消息内容
+     * @bodyParam type string 消息类型 (system/agent/user/error)，默认 user
      */
     public function store(Request $request, Task $task): JsonResponse
     {
-        $validated = $request->validate([
+        $request->validate([
             'content' => 'required|string|max:10000',
-            'type' => 'sometimes|string|in:system,agent,user,error',
+            'type' => 'nullable|string|in:system,agent,user,error',
         ]);
 
-        $message = $task->addMessage(
-            content: $validated['content'],
-            type: $validated['type'] ?? 'user',
-        );
+        $message = Message::create([
+            'task_id' => $task->id,
+            'agent_id' => null,
+            'type' => $request->input('type', 'user'),
+            'content' => $request->input('content'),
+            'created_at' => now(),
+        ]);
 
         $message->load('agent');
 

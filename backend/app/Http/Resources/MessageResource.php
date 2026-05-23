@@ -13,8 +13,12 @@ class MessageResource extends JsonResource
             'id' => $this->id,
             'task_id' => $this->task_id,
             'agent_id' => $this->agent_id,
+            'agent_name' => $this->whenLoaded('agent', function () {
+                return $this->agent->name;
+            }),
             'type' => $this->type,
             'content' => $this->content,
+            'metadata' => $this->metadata ?? [],
             'created_at' => $this->created_at?->toISOString(),
         ];
 
@@ -23,13 +27,6 @@ class MessageResource extends JsonResource
                 'id' => $this->agent->id,
                 'name' => $this->agent->name,
             ];
-            $data['agent_name'] = $this->agent->name;
-        } else {
-            $data['agent_name'] = $this->agent?->name;
-        }
-
-        if ($this->metadata) {
-            $data['metadata'] = $this->metadata;
         }
 
         return $data;
