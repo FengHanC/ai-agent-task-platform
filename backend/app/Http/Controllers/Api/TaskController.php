@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\TaskStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -148,6 +149,8 @@ class TaskController extends Controller
             ], 422);
         }
 
+        $oldStatus = $task->status;
+
         // 如果之前指派给别的 Agent，先解除旧的
         if ($task->assigned_agent_id && $task->assigned_agent_id !== $agent->id && $task->status === 'processing') {
             $oldAgent = Agent::find($task->assigned_agent_id);
@@ -159,8 +162,15 @@ class TaskController extends Controller
         $task->assignTo($agent);
         $task->load('agent');
 
+        // 广播任务状态变更
+        $message = "任务已指派给 Agent: {$agent->name}";
+        broadcast(new TaskStatusChanged($task, $oldStatus, 'processing', $message))->toOthers();
+
+        // 写入系统消息
+        $task->addMessage($message, 'system', $agent->id);
+
         return response()->json([
-            'message' => "任务已指派给 Agent: {$agent->name}",
+            'message' => $message,
             'data' => new TaskResource($task),
         ]);
     }
@@ -177,6 +187,7 @@ class TaskController extends Controller
         ]);
 
         $newStatus = $request->input('status');
+        $oldStatus = $task->status;
 
         switch ($newStatus) {
             case 'processing':
@@ -201,6 +212,9 @@ class TaskController extends Controller
                     'started_at' => now(),
                 ]);
                 $agent->incrementTaskCount();
+
+                $msg = "任务开始处理，指派给 Agent: {$agent->name}";
+                $task->addMessage($msg, 'system', $agent->id);
                 break;
 
             case 'completed':
@@ -210,6 +224,10 @@ class TaskController extends Controller
                     ], 422);
                 }
                 $task->markCompleted();
+
+                $agentName = $task->agent?->name ?? '未知';
+                $msg = "任务已完成（{$agentName}）";
+                $task->addMessage($msg, 'system', $task->agent?->id);
                 break;
 
             case 'failed':
@@ -219,6 +237,10 @@ class TaskController extends Controller
                     ], 422);
                 }
                 $task->markFailed();
+
+                $agentName = $task->agent?->name ?? '未知';
+                $msg = "任务处理失败（{$agentName}）";
+                $task->addMessage($msg, 'system', $task->agent?->id);
                 break;
 
             case 'cancelled':
@@ -228,8 +250,14 @@ class TaskController extends Controller
                     ], 422);
                 }
                 $task->markCancelled();
+
+                $msg = '任务已取消';
+                $task->addMessage($msg, 'system');
                 break;
         }
+
+        // 广播任务状态变更
+        broadcast(new TaskStatusChanged($task, $oldStatus, $newStatus))->toOthers();
 
         $task->load('agent');
 

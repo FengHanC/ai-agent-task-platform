@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
-use App\Models\Task;
 use App\Models\Message;
+use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -47,13 +48,16 @@ class MessageController extends Controller
 
         $message = Message::create([
             'task_id' => $task->id,
-            'agent_id' => null,                       // 用户消息暂不绑定 Agent（后续可从上下文注入）
+            'agent_id' => null,
             'type' => $request->input('type', 'user'),
             'content' => $request->input('content'),
             'created_at' => now(),
         ]);
 
         $message->load('agent');
+
+        // 广播新消息
+        broadcast(new MessageSent($message))->toOthers();
 
         return response()->json([
             'message' => '消息发送成功',

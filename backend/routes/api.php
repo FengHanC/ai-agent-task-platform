@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AgentController;
-use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\MessageController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
 /*

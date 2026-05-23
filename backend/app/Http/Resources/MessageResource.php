@@ -9,7 +9,7 @@ class MessageResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'task_id' => $this->task_id,
             'agent_id' => $this->agent_id,
@@ -21,5 +21,14 @@ class MessageResource extends JsonResource
             'metadata' => $this->metadata ?? [],
             'created_at' => $this->created_at?->toISOString(),
         ];
+
+        if ($this->relationLoaded('agent')) {
+            $data['agent'] = [
+                'id' => $this->agent->id,
+                'name' => $this->agent->name,
+            ];
+        }
+
+        return $data;
     }
 }
