@@ -46,6 +46,17 @@ class Task extends Model
         return $this->hasMany(Message::class);
     }
 
+    public function addMessage(string $content, string $type = 'system', ?int $agentId = null, ?array $metadata = null): Message
+    {
+        return $this->messages()->create([
+            'agent_id' => $agentId,
+            'type' => $type,
+            'content' => $content,
+            'metadata' => $metadata,
+            'created_at' => now(),
+        ]);
+    }
+
     public function assignTo(Agent $agent): void
     {
         $this->update([
