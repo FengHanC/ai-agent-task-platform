@@ -15,10 +15,11 @@
 
 ## 功能特性
 
-- **Agent 管理**: 注册、配置、监控 AI Agent 状态
+- **Agent 管理**: 注册、配置、监控 AI Agent 状态 (online/offline/busy)
 - **任务管理**: 创建、手动指派、状态流转 (待处理→进行中→已完成/失败)
-- **消息聚合**: 按状态聚合任务消息，实时推送更新
-- **实时通信**: 基于 Laravel Reverb 的 WebSocket 实时推送
+- **消息聚合**: 任务消息面板，支持系统消息/Agent消息/用户消息
+- **实时通信**: 基于 Laravel Reverb 的 WebSocket 广播 (TaskStatusChanged 事件)
+- **活动日志**: Dashboard 展示最近任务活动记录
 
 ## 快速开始
 
@@ -112,6 +113,34 @@ ai-agent-task-platform/
 | type | enum | system/agent/user/error |
 | content | text | 消息内容 |
 
+## API 端点
+
+### Agent API (`/api/v1/agents`)
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /api/v1/agents | Agent 列表 (支持 ?status=online 筛选) |
+| POST | /api/v1/agents | 创建 Agent |
+| GET | /api/v1/agents/{id} | Agent 详情 |
+| PUT | /api/v1/agents/{id} | 更新 Agent |
+| DELETE | /api/v1/agents/{id} | 删除 Agent |
+
+### Task API (`/api/v1/tasks`)
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /api/v1/tasks | 任务列表 (支持 ?status=&type=&priority= 筛选) |
+| POST | /api/v1/tasks | 创建任务 |
+| GET | /api/v1/tasks/{id} | 任务详情 |
+| PUT | /api/v1/tasks/{id} | 更新任务 |
+| DELETE | /api/v1/tasks/{id} | 删除任务 |
+| POST | /api/v1/tasks/{id}/assign | 指派 Agent (body: { agent_id }) |
+| POST | /api/v1/tasks/{id}/status | 更新状态 (body: { status }) |
+
+### Message API (`/api/v1/tasks/{task}/messages`)
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /api/v1/tasks/{task}/messages | 消息列表 |
+| POST | /api/v1/tasks/{task}/messages | 发送消息 (body: { content, type }) |
+
 ## 开发规范
 
 ### Git 提交规范
@@ -129,16 +158,27 @@ ai-agent-task-platform/
 
 ## 开发状态
 
-当前处于 **Sprint 0 - 项目初始化** 阶段。
+> 详细待办清单请查看 [TODO.md](./TODO.md)
 
-- [x] Docker 开发环境
-- [x] Laravel 后端初始化
-- [x] Vue 3 前端初始化
-- [x] 数据库设计与迁移
-- [ ] Agent CRUD API + 页面
-- [ ] 任务管理 API + 页面
-- [ ] 消息聚合面板
-- [ ] 实时推送集成
+### 已完成
+
+- [x] **Sprint 0** - 项目初始化 (Docker + Laravel + Vue 3 + 数据库)
+- [x] **Sprint 1** - Agent 管理 (CRUD API + 列表/创建/详情页)
+- [x] **Sprint 2** - 任务管理 (CRUD API + 指派 + 状态流转 + 页面)
+- [x] **Sprint 3** - 消息聚合 (消息 API + WebSocket 广播 + 消息面板 + 活动日志)
+
+### 进行中
+
+- [ ] **Sprint 4** - 优化与完善 (用户认证 + 单元测试 + UI 优化)
+- [ ] **Sprint 5** - 高级功能 (自动指派 + 心跳检测 + 数据统计)
+
+### 协作记录
+
+| Sprint | PR | 后端 (Agent-B) | 前端 (Agent-F) |
+|--------|-----|----------------|----------------|
+| Sprint 1 | #1, #2 | Agent CRUD API | Agent 管理页面 |
+| Sprint 2 | #3, #4 | Task CRUD API | 任务管理页面 |
+| Sprint 3 | - | 消息 API + 广播 | 消息面板 + 活动日志 |
 
 ## License
 
