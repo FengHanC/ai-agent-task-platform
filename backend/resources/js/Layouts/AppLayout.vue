@@ -27,7 +27,7 @@
                         </Link>
 
                         <!-- 桌面端导航 -->
-                        <div class="hidden md:flex items-center ml-10 space-x-1">
+                        <div v-if="user" class="hidden md:flex items-center ml-10 space-x-1">
                             <NavLink href="/dashboard" :active="isActive('/dashboard')">
                                 📊 仪表盘
                             </NavLink>
@@ -40,9 +40,34 @@
                         </div>
                     </div>
 
-                    <!-- 右侧 -->
+                    <!-- 右侧：用户信息 -->
                     <div class="flex items-center space-x-4">
-                        <span class="hidden sm:inline text-sm text-gray-400">MVP v0.1</span>
+                        <template v-if="user">
+                            <span class="hidden sm:inline text-sm text-gray-500">
+                                {{ user.name }}
+                            </span>
+                            <!-- 登出按钮（桌面） -->
+                            <button
+                                @click="logout"
+                                class="hidden sm:inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                退出
+                            </button>
+                        </template>
+                        <template v-else>
+                            <Link
+                                href="/login"
+                                class="text-sm text-gray-600 hover:text-gray-900"
+                            >
+                                登录
+                            </Link>
+                            <Link
+                                href="/register"
+                                class="inline-flex items-center px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+                            >
+                                注册
+                            </Link>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -80,25 +105,58 @@
                         </button>
                     </div>
 
+                    <!-- 用户信息（移动端） -->
+                    <div v-if="user" class="px-5 py-4 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                                {{ user.name.charAt(0).toUpperCase() }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
+                                <p class="text-xs text-gray-400">{{ user.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 导航 -->
                     <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                        <SidebarLink href="/dashboard" :active="isActive('/dashboard')" @click="mobileMenuOpen = false">
-                            <span class="text-lg">📊</span>
-                            仪表盘
-                        </SidebarLink>
-                        <SidebarLink href="/agents" :active="isActive('/agents')" @click="mobileMenuOpen = false">
-                            <span class="text-lg">🤖</span>
-                            Agent 管理
-                        </SidebarLink>
-                        <SidebarLink href="/tasks" :active="isActive('/tasks')" @click="mobileMenuOpen = false">
-                            <span class="text-lg">📋</span>
-                            任务管理
-                        </SidebarLink>
+                        <template v-if="user">
+                            <SidebarLink href="/dashboard" :active="isActive('/dashboard')" @click="mobileMenuOpen = false">
+                                <span class="text-lg">📊</span>
+                                仪表盘
+                            </SidebarLink>
+                            <SidebarLink href="/agents" :active="isActive('/agents')" @click="mobileMenuOpen = false">
+                                <span class="text-lg">🤖</span>
+                                Agent 管理
+                            </SidebarLink>
+                            <SidebarLink href="/tasks" :active="isActive('/tasks')" @click="mobileMenuOpen = false">
+                                <span class="text-lg">📋</span>
+                                任务管理
+                            </SidebarLink>
+                        </template>
+                        <template v-else>
+                            <SidebarLink href="/login" :active="isActive('/login')" @click="mobileMenuOpen = false">
+                                <span class="text-lg">🔑</span>
+                                登录
+                            </SidebarLink>
+                            <SidebarLink href="/register" :active="isActive('/register')" @click="mobileMenuOpen = false">
+                                <span class="text-lg">📝</span>
+                                注册
+                            </SidebarLink>
+                        </template>
                     </div>
 
                     <!-- 底部 -->
-                    <div class="px-5 py-3 border-t border-gray-100">
-                        <p class="text-xs text-gray-400">MVP v0.1</p>
+                    <div class="px-5 py-3 border-t border-gray-100 space-y-2">
+                        <button
+                            v-if="user"
+                            @click="logoutMobile"
+                            class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                            <span class="text-lg">🚪</span>
+                            <span>退出登录</span>
+                        </button>
+                        <p class="text-xs text-gray-400 text-center">MVP v0.1</p>
                     </div>
                 </div>
             </Transition>
@@ -115,8 +173,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { usePage, Link } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
+import { usePage, Link, router } from '@inertiajs/vue3'
 import Toast from '@/Components/Toast.vue'
 import NavLink from '@/Components/NavLink.vue'
 import SidebarLink from '@/Components/SidebarLink.vue'
@@ -125,23 +183,35 @@ import { useToast } from '@/composables/useToast'
 const { success: toastSuccess, error: toastError } = useToast()
 const mobileMenuOpen = ref(false)
 
+// 当前登录用户（从 Inertia 共享属性获取）
+const page = usePage()
+const user = computed(() => page.props.auth?.user || null)
+
 function isActive(path) {
     if (typeof window === 'undefined') return false
     return window.location.pathname.startsWith(path)
 }
 
-// 监听 Inertia flash 消息，自动弹 Toast
-const page = usePage()
+function logout() {
+    router.post('/logout', {}, {
+        onSuccess: () => {
+            mobileMenuOpen.value = false
+        },
+    })
+}
+
+function logoutMobile() {
+    mobileMenuOpen.value = false
+    router.post('/logout')
+}
+
+// 监听 Inertia flash 消息
 watch(
     () => page.props.flash,
     (flash) => {
         if (!flash) return
-        if (flash.success) {
-            toastSuccess(flash.success)
-        }
-        if (flash.error) {
-            toastError(flash.error)
-        }
+        if (flash.success) toastSuccess(flash.success)
+        if (flash.error) toastError(flash.error)
     },
     { deep: true, immediate: true }
 )

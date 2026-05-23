@@ -72,19 +72,12 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import ActivityLog from '@/Components/ActivityLog.vue'
 
 const props = defineProps({
     activities: { type: Array, default: () => [] },
-})
-
-const stats = reactive({
-    pending: 0,
-    processing: 0,
-    completed: 0,
-    failed: 0,
+    stats: { type: Object, default: () => ({ pending: 0, processing: 0, completed: 0, failed: 0 }) },
 })
 </script>
