@@ -36,10 +36,10 @@ class AgentAssignmentStrategyTest extends TestCase
     public function test_选择负载最低的_agent(): void
     {
         Agent::factory()->withCapabilities(['code'])->create([
-            'current_tasks' => 4, 'max_tasks' => 5,
+            'current_tasks' => 4, 'max_capacity' => 5,
         ]);
         $lightAgent = Agent::factory()->withCapabilities(['code'])->create([
-            'current_tasks' => 1, 'max_tasks' => 5,
+            'current_tasks' => 1, 'max_capacity' => 5,
         ]);
 
         $task = Task::factory()->create(['type' => 'code']);

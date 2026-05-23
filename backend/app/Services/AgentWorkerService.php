@@ -26,7 +26,7 @@ class AgentWorkerService
 
         // 1. 找到可用的 Agent（online，有剩余容量）
         $availableAgents = Agent::where('status', 'online')
-            ->whereColumn('current_tasks', '<', 'max_tasks')
+            ->whereColumn('current_tasks', '<', 'max_capacity')
             ->get();
 
         if ($availableAgents->isEmpty()) {

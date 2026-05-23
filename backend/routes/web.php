@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Tasks/Show', [
             'task' => $task,
             'availableAgents' => Agent::where('status', 'online')
-                ->whereColumn('current_tasks', '<', 'max_tasks')
+                ->whereColumn('current_tasks', '<', 'max_capacity')
                 ->get(),
         ]);
     })->name('tasks.show');
