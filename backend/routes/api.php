@@ -26,4 +26,7 @@ Route::prefix('v1')->group(function () {
     // 消息 API（嵌套在任务下）
     Route::get('tasks/{task}/messages', [MessageController::class, 'index'])->name('tasks.messages.index');
     Route::post('tasks/{task}/messages', [MessageController::class, 'store'])->name('tasks.messages.store');
+
+    // 自动指派 Agent
+    Route::post('tasks/{task}/auto-assign', [TaskController::class, 'autoAssign'])->name('tasks.auto-assign');
 });

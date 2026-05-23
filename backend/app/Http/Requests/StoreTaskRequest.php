@@ -24,6 +24,7 @@ class StoreTaskRequest extends FormRequest
                 'integer',
                 Rule::exists('agents', 'id')->whereNull('deleted_at'),
             ],
+            'auto_assign' => 'boolean',
             'metadata' => 'nullable|array',
         ];
     }

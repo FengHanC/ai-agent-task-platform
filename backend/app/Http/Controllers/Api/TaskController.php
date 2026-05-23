@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Agent;
 use App\Models\Task;
+use App\Services\AgentAssignmentStrategy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -54,6 +55,8 @@ class TaskController extends Controller
 
     /**
      * 创建任务（status 默认 pending，type 默认 other，priority 默认 medium）
+     *
+     * @bodyParam auto_assign bool 是否自动指派 Agent（默认 false）
      */
     public function store(StoreTaskRequest $request): JsonResponse
     {
@@ -68,6 +71,19 @@ class TaskController extends Controller
             'assigned_agent_id' => $data['assigned_agent_id'] ?? null,
             'metadata' => $data['metadata'] ?? null,
         ]);
+
+        // 如果指定了 auto_assign 且没有手动指派，自动匹配 Agent
+        if ($request->boolean('auto_assign') && !$task->assigned_agent_id) {
+            $strategy = app(AgentAssignmentStrategy::class);
+            $agent = $strategy->assignBestAgent($task);
+
+            if ($agent) {
+                $task->load('agent');
+                $message = "任务已自动指派给 Agent: {$agent->name}（能力匹配 + 负载均衡）";
+                broadcast(new TaskStatusChanged($task, 'pending', 'processing', $message))->toOthers();
+                $task->addMessage($message, 'system', $agent->id);
+            }
+        }
 
         $task->load('agent');
 
@@ -167,6 +183,36 @@ class TaskController extends Controller
         broadcast(new TaskStatusChanged($task, $oldStatus, 'processing', $message))->toOthers();
 
         // 写入系统消息
+        $task->addMessage($message, 'system', $agent->id);
+
+        return response()->json([
+            'message' => $message,
+            'data' => new TaskResource($task),
+        ]);
+    }
+
+    /**
+     * 自动指派 Agent（按能力匹配 + 负载均衡）
+     */
+    public function autoAssign(Request $request, Task $task): JsonResponse
+    {
+        $strategy = app(AgentAssignmentStrategy::class);
+        $agent = $strategy->findBestAgent($task);
+
+        if (!$agent) {
+            return response()->json([
+                'message' => '没有可用的 Agent 来指派此任务',
+                'errors' => ['agent' => ['所有 Agent 均不可用（不在线或无空闲容量）']],
+            ], 422);
+        }
+
+        $oldStatus = $task->status;
+
+        $task->assignTo($agent);
+        $task->load('agent');
+
+        $message = "任务已自动指派给 Agent: {$agent->name}（能力匹配 + 负载均衡）";
+        broadcast(new TaskStatusChanged($task, $oldStatus, 'processing', $message))->toOthers();
         $task->addMessage($message, 'system', $agent->id);
 
         return response()->json([
