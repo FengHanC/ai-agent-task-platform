@@ -38,9 +38,15 @@ Route::middleware('auth')->group(function () {
             'processing' => Task::where('status', 'processing')->count(),
             'completed' => Task::where('status', 'completed')->count(),
             'failed' => Task::where('status', 'failed')->count(),
+            'online_agents' => Agent::where('status', 'online')->count(),
+            'total_agents' => Agent::count(),
+            'today_completed' => Task::where('status', 'completed')
+                ->whereDate('completed_at', today())
+                ->count(),
         ];
 
-        $activities = \App\Models\Message::with('task')
+        // 最近消息活动
+        $activities = \App\Models\Message::with('task.agent')
             ->latest()
             ->take(20)
             ->get()
@@ -53,9 +59,42 @@ Route::middleware('auth')->group(function () {
                 'created_at' => $msg->created_at?->diffForHumans(),
             ]);
 
+        // 最近待处理任务（按优先级排序）
+        $pendingTasks = Task::with('agent')
+            ->where('status', 'pending')
+            ->orderByRaw("CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END")
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // 按任务状态提取最近动态
+        $recentActivities = Task::with('agent')
+            ->whereIn('status', ['processing', 'completed', 'failed'])
+            ->latest('updated_at')
+            ->take(10)
+            ->get()
+            ->map(function ($task) {
+                $statusMap = [
+                    'processing' => '开始处理',
+                    'completed' => '已完成',
+                    'failed' => '处理失败',
+                ];
+                return [
+                    'id' => $task->id,
+                    'type' => "task_{$task->status}",
+                    'description' => "【{$task->title}】{$statusMap[$task->status]}"
+                        . ($task->agent ? " - {$task->agent->name}" : ''),
+                    'task_title' => $task->title,
+                    'task_id' => $task->id,
+                    'created_at' => $task->updated_at?->toISOString(),
+                ];
+            });
+
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'activities' => $activities,
+            'pendingTasks' => $pendingTasks,
+            'recentActivities' => $recentActivities,
         ]);
     })->name('dashboard');
 
