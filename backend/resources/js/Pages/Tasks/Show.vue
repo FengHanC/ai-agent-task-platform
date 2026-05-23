@@ -187,11 +187,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import MessagePanel from '@/Components/MessagePanel.vue'
 import { useToast } from '@/composables/useToast'
+import { useTaskChannel } from '@/composables/useTaskChannel'
 
 const { success: toastSuccess, error: toastError } = useToast()
 
@@ -337,4 +338,20 @@ function agentStatusBadge(status) {
 function refreshMessages() {
     router.reload({ preserveScroll: true, preserveState: true })
 }
+
+// ── WebSocket 实时监听 ──
+let taskChannel
+
+onMounted(() => {
+    taskChannel = useTaskChannel(props.task.id)
+
+    // 任务状态变更（指派、完成、失败等）→ 刷新页面
+    taskChannel.onStatusChanged(() => {
+        refreshMessages()
+    })
+})
+
+onUnmounted(() => {
+    if (taskChannel) taskChannel.leave()
+})
 </script>

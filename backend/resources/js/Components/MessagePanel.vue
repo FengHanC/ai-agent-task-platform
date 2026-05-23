@@ -1,11 +1,10 @@
 <template>
     <div class="flex flex-col">
-        <!-- 标题 -->
         <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">任务消息</h2>
 
         <!-- 消息列表 -->
         <div ref="messageContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 mb-4">
-            <div v-if="messages.length === 0" class="text-center py-8">
+            <div v-if="allMessages.length === 0" class="text-center py-8">
                 <p class="text-sm text-gray-400">暂无消息</p>
             </div>
 
@@ -58,7 +57,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useTaskChannel } from '@/composables/useTaskChannel'
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
@@ -67,18 +67,47 @@ const props = defineProps({
 
 const emit = defineEmits(['message-sent'])
 
+// 实时消息：合并 props 消息 + WebSocket 推送的新消息
+const liveIncoming = ref([])
+
+const allMessages = computed(() => {
+    return [...props.messages, ...liveIncoming.value]
+})
+
+const sortedMessages = computed(() => {
+    return [...allMessages.value].sort((a, b) => {
+        return new Date(b.created_at) - new Date(a.created_at)
+    })
+})
+
 const messageContent = ref('')
 const sending = ref(false)
 const sendError = ref('')
 const messageContainer = ref(null)
 const inputRef = ref(null)
 
-const sortedMessages = computed(() => {
-    return [...props.messages].sort((a, b) => {
-        return new Date(b.created_at) - new Date(a.created_at)
+// ── WebSocket 监听 ──
+let channel
+
+onMounted(() => {
+    channel = useTaskChannel(props.taskId)
+
+    channel.onMessageSent((data) => {
+        // 避免自己发送的消息重复（fetch 返回后 emit message-sent → reload）
+        // 如果消息不是当前用户刚发的，才追加
+        const exists = props.messages.some(m => m.id === data.id) ||
+                       liveIncoming.value.some(m => m.id === data.id)
+        if (!exists) {
+            liveIncoming.value.push(data)
+        }
     })
 })
 
+onUnmounted(() => {
+    if (channel) channel.leave()
+})
+
+// ── 发送消息 ──
 async function sendMessage() {
     const content = messageContent.value.trim()
     if (!content || sending.value) return
@@ -87,7 +116,7 @@ async function sendMessage() {
     sendError.value = ''
 
     try {
-        const response = await fetch(`/api/v1/tasks/${props.taskId}/messages`, {
+        const res = await fetch(`/api/v1/tasks/${props.taskId}/messages`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -97,13 +126,12 @@ async function sendMessage() {
             body: JSON.stringify({ content, type: 'user' }),
         })
 
-        if (!response.ok) {
-            const data = await response.json()
-            if (response.status === 422 && data.errors) {
-                sendError.value = data.errors.content?.[0] || '数据校验失败'
-            } else {
-                sendError.value = data.message || '发送失败'
-            }
+        const data = await res.json()
+
+        if (!res.ok) {
+            sendError.value = res.status === 422
+                ? (data.errors?.content?.[0] || '数据校验失败')
+                : (data.message || '发送失败')
             return
         }
 
@@ -120,7 +148,8 @@ async function sendMessage() {
     }
 }
 
-watch(() => props.messages.length, () => {
+// ── 滚动 ──
+watch(() => allMessages.value.length, () => {
     nextTick(() => {
         if (messageContainer.value) {
             messageContainer.value.scrollTop = 0
@@ -128,6 +157,7 @@ watch(() => props.messages.length, () => {
     })
 })
 
+// ── 样式 helper ──
 function messageBg(type) {
     const map = { system: 'bg-gray-50', agent: 'bg-blue-50', user: 'bg-green-50', error: 'bg-red-50' }
     return map[type] || 'bg-gray-50'
