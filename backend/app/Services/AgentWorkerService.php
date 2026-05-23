@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Agent;
+use App\Models\Message;
 use App\Models\Task;
 use Illuminate\Support\Facades\Log;
 
@@ -51,6 +52,76 @@ class AgentWorkerService
 
         Log::info("Agent Worker: 本次处理了 {$processed} 个任务");
         return $processed;
+    }
+
+    /**
+     * 处理用户消息的回复：已指派的 Agent 对用户消息做出回应。
+     */
+    public function processReply(Task $task, Message $userMessage): void
+    {
+        $agent = $task->agent;
+        if (!$agent) {
+            return;
+        }
+
+        $task->addMessage(
+            "Agent 「{$agent->name}」正在回复...",
+            'system',
+            $agent->id
+        );
+
+        try {
+            // 构建上下文：任务信息 + 最近对话历史
+            $config = config('agent-worker.worker');
+            $systemPrompt = str_replace(
+                ['{name}', '{capabilities}'],
+                [$agent->name, implode(', ', $agent->capabilities ?? [])],
+                $config['system_prompt_template']
+            );
+
+            // 获取最近的对话上下文（最多 6 条消息作为上下文）
+            $recentMessages = $task->messages()
+                ->latest()
+                ->take(6)
+                ->get()
+                ->reverse();
+
+            $messages = [
+                ['role' => 'system', 'content' => $systemPrompt],
+            ];
+
+            foreach ($recentMessages as $msg) {
+                $role = match ($msg->type) {
+                    'user' => 'user',
+                    'agent' => 'assistant',
+                    default => 'system',
+                };
+                $messages[] = [
+                    'role' => $role,
+                    'content' => $msg->content,
+                ];
+            }
+
+            // 调用 LLM
+            $result = $this->llm->chat($messages);
+
+            // 写回结果
+            $this->writeResultToMessages($task, $agent, $result);
+
+            Log::info("Agent Worker: 任务 #{$task->id} Agent #{$agent->id} 回复完成");
+
+        } catch (\Throwable $e) {
+            Log::error("Agent Worker: 任务 #{$task->id} 回复失败", [
+                'error' => $e->getMessage(),
+                'agent_id' => $agent->id,
+            ]);
+
+            $task->addMessage(
+                "Agent 回复失败：{$e->getMessage()}",
+                'error',
+                $agent->id
+            );
+        }
     }
 
     /**

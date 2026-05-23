@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use App\Models\Task;
+use App\Services\AgentWorkerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -58,6 +59,19 @@ class MessageController extends Controller
 
         // 广播新消息
         broadcast(new MessageSent($message))->toOthers();
+
+        // 用户消息 → 触发 Agent 回复
+        if ($message->type === 'user' && $task->status === 'processing' && $task->agent) {
+            try {
+                $worker = app(AgentWorkerService::class);
+                $worker->processReply($task, $message);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Agent 回复失败', [
+                    'task_id' => $task->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => '消息发送成功',
