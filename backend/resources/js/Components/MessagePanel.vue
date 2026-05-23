@@ -3,14 +3,12 @@
         <!-- 标题 -->
         <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">任务消息</h2>
 
-        <!-- 消息列表容器（带固定高度滚动） -->
+        <!-- 消息列表 -->
         <div ref="messageContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 mb-4">
-            <!-- 空状态 -->
             <div v-if="messages.length === 0" class="text-center py-8">
                 <p class="text-sm text-gray-400">暂无消息</p>
             </div>
 
-            <!-- 消息条目 -->
             <div
                 v-for="msg in sortedMessages"
                 :key="msg.id"
@@ -27,31 +25,32 @@
             </div>
         </div>
 
-        <!-- 发送消息表单 -->
+        <!-- 发送消息 -->
         <form @submit.prevent="sendMessage" class="flex items-end space-x-2 border-t border-gray-100 pt-3">
             <div class="flex-1">
                 <textarea
                     ref="inputRef"
-                    v-model="form.content"
+                    v-model="messageContent"
                     rows="2"
                     placeholder="输入消息..."
                     :class="['w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none',
-                        form.errors.content ? 'border-red-300 bg-red-50' : 'border-gray-300']"
+                        sendError ? 'border-red-300 bg-red-50' : 'border-gray-300']"
                     @keydown.enter.ctrl="sendMessage"
                     @keydown.enter.meta="sendMessage"
+                    :disabled="sending"
                 ></textarea>
-                <p v-if="form.errors.content" class="mt-1 text-xs text-red-600">{{ form.errors.content }}</p>
+                <p v-if="sendError" class="mt-1 text-xs text-red-600">{{ sendError }}</p>
             </div>
             <button
                 type="submit"
-                :disabled="form.processing || !form.content.trim()"
+                :disabled="sending || !messageContent.trim()"
                 :class="['px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex-shrink-0',
-                    form.processing || !form.content.trim()
+                    sending || !messageContent.trim()
                         ? 'bg-indigo-400 cursor-not-allowed'
                         : 'bg-indigo-600 hover:bg-indigo-700'
                 ]"
             >
-                {{ form.processing ? '发送中...' : '发送' }}
+                {{ sending ? '发送中...' : '发送' }}
             </button>
         </form>
         <p class="mt-1 text-xs text-gray-400">按 Ctrl+Enter / ⌘+Enter 快速发送</p>
@@ -60,7 +59,6 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useForm } from '@inertiajs/vue3'
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
@@ -69,37 +67,59 @@ const props = defineProps({
 
 const emit = defineEmits(['message-sent'])
 
+const messageContent = ref('')
+const sending = ref(false)
+const sendError = ref('')
 const messageContainer = ref(null)
 const inputRef = ref(null)
 
-// 按时间倒序排列（最新在最上面）
 const sortedMessages = computed(() => {
     return [...props.messages].sort((a, b) => {
         return new Date(b.created_at) - new Date(a.created_at)
     })
 })
 
-const form = useForm({
-    content: '',
-    type: 'user',
-})
+async function sendMessage() {
+    const content = messageContent.value.trim()
+    if (!content || sending.value) return
 
-function sendMessage() {
-    if (!form.content.trim()) return
+    sending.value = true
+    sendError.value = ''
 
-    form.post(`/api/v1/tasks/${props.taskId}/messages`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            emit('message-sent')
-            form.reset('content')
-            nextTick(() => {
-                inputRef.value?.focus()
-            })
-        },
-    })
+    try {
+        const response = await fetch(`/api/v1/tasks/${props.taskId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ content, type: 'user' }),
+        })
+
+        if (!response.ok) {
+            const data = await response.json()
+            if (response.status === 422 && data.errors) {
+                sendError.value = data.errors.content?.[0] || '数据校验失败'
+            } else {
+                sendError.value = data.message || '发送失败'
+            }
+            return
+        }
+
+        messageContent.value = ''
+        emit('message-sent')
+
+        nextTick(() => {
+            inputRef.value?.focus()
+        })
+    } catch (e) {
+        sendError.value = '网络错误，请重试'
+    } finally {
+        sending.value = false
+    }
 }
 
-// 新消息到达时滚动到底部（最上面的最新消息）
 watch(() => props.messages.length, () => {
     nextTick(() => {
         if (messageContainer.value) {
@@ -109,32 +129,17 @@ watch(() => props.messages.length, () => {
 })
 
 function messageBg(type) {
-    const map = {
-        system: 'bg-gray-50',
-        agent: 'bg-blue-50',
-        user: 'bg-green-50',
-        error: 'bg-red-50',
-    }
+    const map = { system: 'bg-gray-50', agent: 'bg-blue-50', user: 'bg-green-50', error: 'bg-red-50' }
     return map[type] || 'bg-gray-50'
 }
 
 function messageTextColor(type) {
-    const map = {
-        system: 'text-gray-600',
-        agent: 'text-blue-700',
-        user: 'text-green-700',
-        error: 'text-red-700',
-    }
+    const map = { system: 'text-gray-600', agent: 'text-blue-700', user: 'text-green-700', error: 'text-red-700' }
     return map[type] || 'text-gray-600'
 }
 
 function messageTypeLabel(type) {
-    const map = {
-        system: '🔧 系统',
-        agent: '🤖 Agent',
-        user: '👤 用户',
-        error: '❌ 错误',
-    }
+    const map = { system: '🔧 系统', agent: '🤖 Agent', user: '👤 用户', error: '❌ 错误' }
     return map[type] || type
 }
 
