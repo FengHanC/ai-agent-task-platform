@@ -40,9 +40,22 @@ Route::middleware('auth')->group(function () {
             'failed' => Task::where('status', 'failed')->count(),
         ];
 
+        $activities = \App\Models\Message::with('task')
+            ->latest()
+            ->take(20)
+            ->get()
+            ->map(fn($msg) => [
+                'id' => $msg->id,
+                'type' => $msg->type,
+                'content' => $msg->content,
+                'task_title' => $msg->task?->title,
+                'task_id' => $msg->task_id,
+                'created_at' => $msg->created_at?->diffForHumans(),
+            ]);
+
         return Inertia::render('Dashboard', [
             'stats' => $stats,
-            'activities' => [], // 后续接入活动日志
+            'activities' => $activities,
         ]);
     })->name('dashboard');
 

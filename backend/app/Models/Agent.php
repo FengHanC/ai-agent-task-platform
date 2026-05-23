@@ -19,6 +19,7 @@ class Agent extends Model
         'max_capacity',
         'current_tasks',
         'metadata',
+        'last_heartbeat_at',
     ];
 
     protected $casts = [
@@ -55,6 +56,11 @@ class Agent extends Model
     public function decrementTaskCount(): void
     {
         $this->decrement('current_tasks');
+        // 确保不低于 0
+        if ($this->current_tasks < 0) {
+            $this->update(['current_tasks' => 0]);
+            $this->current_tasks = 0;
+        }
         if ($this->status === 'busy' && $this->current_tasks < $this->max_capacity) {
             $this->update(['status' => 'online']);
         }

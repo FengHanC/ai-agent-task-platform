@@ -49,7 +49,7 @@ class AgentApiTest extends TestCase
             'description' => '测试描述',
             'capabilities' => ['code', 'analysis'],
             'status' => 'online',
-            'max_tasks' => 10,
+            'max_capacity' => 10,
         ];
 
         $response = $this->postJson('/api/v1/agents', $payload);

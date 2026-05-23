@@ -20,7 +20,7 @@ class AgentFactory extends Factory
             'description' => fake()->sentence(),
             'capabilities' => fake()->randomElements(['code', 'analysis', 'design', 'review', 'other'], rand(1, 3)),
             'status' => 'online',
-            'max_tasks' => 5,
+            'max_capacity' => 5,
             'current_tasks' => 0,
         ];
     }
@@ -46,6 +46,6 @@ class AgentFactory extends Factory
     /** 达到最大任务数 */
     public function full(): static
     {
-        return $this->state(fn() => ['current_tasks' => 5, 'max_tasks' => 5]);
+        return $this->state(fn() => ['current_tasks' => 5, 'max_capacity' => 5]);
     }
 }

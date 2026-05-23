@@ -14,10 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware('auth')->group(function () {
     // Agent CRUD
     Route::apiResource('agents', AgentController::class);
     Route::post('agents/{agent}/heartbeat', [AgentController::class, 'heartbeat'])->name('agents.heartbeat');
+    Route::post('agents/{agent}/online', [AgentController::class, 'goOnline'])->name('agents.online');
+    Route::post('agents/{agent}/offline', [AgentController::class, 'goOffline'])->name('agents.offline');
 
     // Task CRUD + 扩展端点
     Route::apiResource('tasks', TaskController::class);

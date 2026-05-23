@@ -127,4 +127,41 @@ class AgentController extends Controller
             ],
         ]);
     }
+
+    /**
+     * 上线 Agent
+     */
+    public function goOnline(Agent $agent): JsonResponse
+    {
+        $agent->update([
+            'status' => 'online',
+            'last_heartbeat_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Agent 已上线',
+            'data' => new AgentResource($agent->fresh()),
+        ]);
+    }
+
+    /**
+     * 下线 Agent（释放正在处理的任务）
+     */
+    public function goOffline(Agent $agent): JsonResponse
+    {
+        // 释放该 Agent 正在处理的任务
+        $agent->tasks()
+            ->where('status', 'processing')
+            ->update(['status' => 'pending', 'assigned_agent_id' => null]);
+
+        $agent->update([
+            'status' => 'offline',
+            'current_tasks' => 0,
+        ]);
+
+        return response()->json([
+            'message' => 'Agent 已下线，正在处理的任务已释放',
+            'data' => new AgentResource($agent->fresh()),
+        ]);
+    }
 }
