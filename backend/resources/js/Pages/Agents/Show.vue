@@ -131,9 +131,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const { success: toastSuccess, error: toastError } = useToast()
+const toggling = ref(false)
 
 const props = defineProps({
     agent: { type: Object, required: true },
@@ -152,6 +156,39 @@ const capabilityMap = {
 
 function capabilityLabel(value) {
     return capabilityMap[value] || value
+}
+
+async function toggleStatus() {
+    const newStatus = props.agent.status === 'online' ? 'offline' : 'online'
+    if (toggling.value) return
+    toggling.value = true
+
+    try {
+        const res = await fetch(`/api/v1/agents/${props.agent.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ status: newStatus }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            toastError(data.message || '操作失败')
+            return
+        }
+
+        const label = newStatus === 'online' ? '上线' : '下线'
+        toastSuccess(`${props.agent.name} 已${label}`)
+        router.reload({ preserveState: true })
+    } catch (e) {
+        toastError('网络错误，请重试')
+    } finally {
+        toggling.value = false
+    }
 }
 
 function statusLabel(status) {

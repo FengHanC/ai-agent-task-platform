@@ -73,9 +73,18 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span :class="statusBadgeClass(agent.status)">
-                                        {{ statusLabel(agent.status) }}
-                                    </span>
+                                    <div class="flex items-center">
+                                        <span :class="statusBadgeClass(agent.status)">
+                                            {{ statusLabel(agent.status) }}
+                                        </span>
+                                        <button
+                                            @click="toggleStatus(agent)"
+                                            :disabled="toggling[agent.id]"
+                                            class="ml-2 text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:text-gray-300 flex-shrink-0"
+                                        >
+                                            {{ toggling[agent.id] ? '...' : (agent.status === 'online' ? '下线' : '上线') }}
+                                        </button>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
@@ -136,12 +145,21 @@
                                     </span>
                                 </div>
                             </div>
-                            <Link
-                                :href="`/agents/${agent.id}`"
-                                class="flex-shrink-0 text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-2.5 py-1 rounded-lg"
-                            >
-                                详情
-                            </Link>
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                <button
+                                    @click="toggleStatus(agent)"
+                                    :disabled="toggling[agent.id]"
+                                    class="text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:text-gray-300 px-2 py-1 rounded-lg hover:bg-indigo-50"
+                                >
+                                    {{ toggling[agent.id] ? '...' : (agent.status === 'online' ? '下线' : '上线') }}
+                                </button>
+                                <Link
+                                    :href="`/agents/${agent.id}`"
+                                    class="text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-2.5 py-1 rounded-lg"
+                                >
+                                    详情
+                                </Link>
+                            </div>
                         </div>
 
                         <!-- 描述 -->
@@ -206,8 +224,13 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useToast } from '@/composables/useToast'
+
+const { success: toastSuccess, error: toastError } = useToast()
+const toggling = ref({})  // { [agentId]: true/false }
 
 const props = defineProps({
     agents: { type: Object, required: true },
@@ -259,5 +282,38 @@ function formatDate(dateStr) {
 
 function filterByStatus(status) {
     router.get('/agents', { status }, { preserveState: true, replace: true })
+}
+
+async function toggleStatus(agent) {
+    const newStatus = agent.status === 'online' ? 'offline' : 'online'
+    if (toggling.value[agent.id]) return
+    toggling.value[agent.id] = true
+
+    try {
+        const res = await fetch(`/api/v1/agents/${agent.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ status: newStatus }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            toastError(data.message || '操作失败')
+            return
+        }
+
+        const label = newStatus === 'online' ? '上线' : '下线'
+        toastSuccess(`${agent.name} 已${label}`)
+        router.reload({ preserveState: true, preserveScroll: true })
+    } catch (e) {
+        toastError('网络错误，请重试')
+    } finally {
+        toggling.value[agent.id] = false
+    }
 }
 </script>

@@ -36,6 +36,12 @@
         </div>
 
         <!-- 发送消息 -->
+        <!-- 等待回复提示 -->
+        <div v-if="waitingReply" class="flex items-center space-x-2 py-2 px-1 text-sm text-gray-400 animate-pulse">
+            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+            <span>等待 Agent 回复...</span>
+        </div>
+
         <form @submit.prevent="sendMessage" class="flex items-end space-x-2 border-t border-gray-100 pt-3">
             <div class="flex-1">
                 <textarea
@@ -93,6 +99,7 @@ const sortedMessages = computed(() => {
 
 const messageContent = ref('')
 const sending = ref(false)
+const waitingReply = ref(false)
 const sendError = ref('')
 const messageContainer = ref(null)
 const inputRef = ref(null)
@@ -110,6 +117,7 @@ onMounted(() => {
                        liveIncoming.value.some(m => m.id === data.id)
         if (!exists) {
             liveIncoming.value.push(data)
+            waitingReply.value = false
         }
     })
 })
@@ -147,6 +155,7 @@ async function sendMessage() {
         }
 
         messageContent.value = ''
+        waitingReply.value = true
         emit('message-sent')
 
         nextTick(() => {
@@ -160,6 +169,12 @@ async function sendMessage() {
 }
 
 // ── 滚动 ──
+watch(() => props.messages.length, (newLen, oldLen) => {
+    if (newLen > oldLen) {
+        waitingReply.value = false
+    }
+})
+
 watch(() => allMessages.value.length, () => {
     nextTick(() => {
         if (messageContainer.value) {
