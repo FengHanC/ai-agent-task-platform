@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // Agent CRUD
     Route::apiResource('agents', AgentController::class);
+    Route::post('agents/{agent}/heartbeat', [AgentController::class, 'heartbeat'])->name('agents.heartbeat');
 
     // Task CRUD + 扩展端点
     Route::apiResource('tasks', TaskController::class);

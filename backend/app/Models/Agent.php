@@ -26,6 +26,7 @@ class Agent extends Model
         'metadata' => 'array',
         'max_capacity' => 'integer',
         'current_tasks' => 'integer',
+        'last_heartbeat_at' => 'datetime',
     ];
 
     public function tasks(): HasMany
@@ -57,5 +58,37 @@ class Agent extends Model
         if ($this->status === 'busy' && $this->current_tasks < $this->max_capacity) {
             $this->update(['status' => 'online']);
         }
+    }
+
+    /**
+     * 记录心跳
+     */
+    public function heartbeat(): void
+    {
+        $this->update([
+            'last_heartbeat_at' => now(),
+            'status' => 'online',
+        ]);
+    }
+
+    /**
+     * 检查心跳是否超时（超过指定秒数未发送心跳则为超时）
+     */
+    public function isHeartbeatExpired(int $timeoutSeconds = 120): bool
+    {
+        if (!$this->last_heartbeat_at) {
+            return true;
+        }
+        return $this->last_heartbeat_at->diffInSeconds(now()) > $timeoutSeconds;
+    }
+
+    /**
+     * 标记为离线
+     */
+    public function markOffline(): void
+    {
+        $this->update([
+            'status' => 'offline',
+        ]);
     }
 }
