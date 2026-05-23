@@ -17,3 +17,8 @@ Schedule::command('agents:check-heartbeats --timeout=120')
 Schedule::command('tasks:check-timeouts --timeout=30')
     ->everyMinute()
     ->withoutOverlapping();
+
+// Agent Worker：每分钟处理待处理任务，最多 3 个
+Schedule::command('agents:work --max=3')
+    ->everyMinute()
+    ->withoutOverlapping();
