@@ -17,6 +17,7 @@ Route::get('/', function () {
 
 // ── 认证路由（访客）───────────────────────────────────────
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -24,6 +25,12 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
+    // 密码重置
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->name('password.email');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+        ->name('password.reset');
 });
 
 // ── 已登录页面 ─────────────────────────────────────────────
