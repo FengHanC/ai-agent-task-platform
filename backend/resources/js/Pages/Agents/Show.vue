@@ -21,9 +21,24 @@
                                     <p v-if="agent.description" class="mt-1 text-sm text-gray-500 break-words">{{ agent.description }}</p>
                                 </div>
                             </div>
-                            <span :class="statusBadgeClass(agent.status)" class="self-start flex-shrink-0">
-                                {{ statusLabel(agent.status) }}
-                            </span>
+                            <div class="flex items-center space-x-2 self-start flex-shrink-0">
+                                <span :class="statusBadgeClass(agent.status)">
+                                    {{ statusLabel(agent.status) }}
+                                </span>
+                                <button
+                                    @click="toggleStatus"
+                                    :disabled="toggling"
+                                    class="text-xs font-medium text-indigo-600 hover:text-indigo-800 disabled:text-gray-300 bg-indigo-50 px-2.5 py-1 rounded-lg"
+                                >
+                                    {{ toggling ? '...' : (agent.status === 'online' ? '下线' : '上线') }}
+                                </button>
+                                <Link
+                                    :href="`/agents/${agent.id}/edit`"
+                                    class="text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 px-2.5 py-1 rounded-lg hover:bg-gray-200"
+                                >
+                                    编辑
+                                </Link>
+                            </div>
                         </div>
                     </div>
 

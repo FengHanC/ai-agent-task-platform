@@ -131,6 +131,23 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('agents.show');
 
+    Route::get('/agents/{agent}/edit', function (Agent $agent) {
+        $capabilityOptions = [
+            ['value' => 'code_gen', 'label' => '代码生成'],
+            ['value' => 'code_review', 'label' => '代码审查'],
+            ['value' => 'analysis', 'label' => '分析'],
+            ['value' => 'design', 'label' => '设计'],
+            ['value' => 'testing', 'label' => '测试'],
+            ['value' => 'documentation', 'label' => '文档'],
+            ['value' => 'debugging', 'label' => '调试'],
+            ['value' => 'data_processing', 'label' => '数据处理'],
+        ];
+        return Inertia::render('Agents/Edit', [
+            'agent' => $agent,
+            'capabilityOptions' => $capabilityOptions,
+        ]);
+    })->name('agents.edit');
+
     // 任务页面路由
     Route::get('/tasks', function () {
         return Inertia::render('Tasks/Index', [
