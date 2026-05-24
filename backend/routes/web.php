@@ -150,8 +150,12 @@ Route::middleware('auth')->group(function () {
 
     // 任务页面路由
     Route::get('/tasks', function () {
+        $tasks = Task::with('agent')
+            ->latest()
+            ->paginate(min((int) request('per_page', 50), 200));
+
         return Inertia::render('Tasks/Index', [
-            'tasks' => Task::with('agent')->latest()->get(),
+            'tasks' => $tasks,
         ]);
     })->name('tasks.index');
 
