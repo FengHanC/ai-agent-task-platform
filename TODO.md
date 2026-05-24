@@ -75,7 +75,7 @@
 | 4.5 | UI/UX 优化 (响应式 + Toast 通知) | Agent-F | ✅ | P2 |
 | 4.6 | 国际化 (i18n 中英文切换) | Agent-F | ⏳ | P2 |
 | 4.7 | CI/CD (GitHub Actions 自动测试 + 部署) | Coordinator | ⏳ | P2 |
-|| 4.8 | API 文档 (Swagger/OpenAPI) | Agent-B | ⏳ | P3 |
+|| 4.8 | API 文档 (API.md) | Agent-B | ✅ | P3 |
 
 ---
 
