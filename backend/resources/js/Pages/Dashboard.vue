@@ -143,6 +143,50 @@
                     </div>
                 </div>
 
+                <!-- Agent 负载概览 -->
+                <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-4 border-b border-gray-100">
+                        <h2 class="text-base font-semibold text-gray-900">🤖 Agent 负载概览</h2>
+                    </div>
+
+                    <div v-if="agentsOverview.length > 0" class="divide-y divide-gray-50">
+                        <div
+                            v-for="agent in agentsOverview"
+                            :key="agent.id"
+                            class="px-5 py-3.5 flex items-center justify-between hover:bg-gray-50"
+                        >
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs flex-shrink-0">
+                                    {{ (agent.name || '?').charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="min-w-0">
+                                    <Link :href="`/agents/${agent.id}`" class="text-sm font-medium text-gray-900 hover:text-indigo-600 block truncate">
+                                        {{ agent.name }}
+                                    </Link>
+                                    <div class="flex items-center space-x-2 mt-0.5">
+                                        <span :class="agent.status === 'online' ? 'text-green-600' : agent.status === 'busy' ? 'text-yellow-600' : 'text-gray-400'" class="text-xs">
+                                            {{ agent.status === 'online' ? '在线' : agent.status === 'busy' ? '忙碌' : '离线' }}
+                                        </span>
+                                        <span class="text-xs text-gray-400">{{ agent.current_tasks }}/{{ agent.max_capacity }} 任务</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        :class="loadBarColor(agent)"
+                                        class="h-full rounded-full transition-all"
+                                        :style="{ width: loadPercent(agent) + '%' }"
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="px-5 py-6 text-center">
+                        <p class="text-sm text-gray-400">暂无注册的 Agent</p>
+                    </div>
+                </div>
+
                 <!-- 快捷入口 -->
                 <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Link href="/agents" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow group flex items-center space-x-3">
@@ -173,6 +217,7 @@ const props = defineProps({
     stats: { type: Object, default: () => ({ pending: 0, processing: 0, completed: 0, failed: 0, online_agents: 0, total_agents: 0, today_completed: 0 }) },
     pendingTasks: { type: Array, default: () => [] },
     recentActivities: { type: Array, default: () => [] },
+    agentsOverview: { type: Array, default: () => [] },
 })
 
 function typeIcon(type) {
@@ -209,6 +254,19 @@ function activityIcon(type) {
         task_created: '📋',
     }
     return map[type] || '📌'
+}
+
+
+function loadPercent(agent) {
+    if (!agent.max_capacity) return 0
+    return Math.round((agent.current_tasks / agent.max_capacity) * 100)
+}
+
+function loadBarColor(agent) {
+    const p = loadPercent(agent)
+    if (p >= 80) return 'bg-red-500'
+    if (p >= 50) return 'bg-yellow-500'
+    return 'bg-green-500'
 }
 
 function formatTime(dateStr) {

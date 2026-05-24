@@ -95,6 +95,10 @@ Route::middleware('auth')->group(function () {
             'activities' => $activities,
             'pendingTasks' => $pendingTasks,
             'recentActivities' => $recentActivities,
+            'agentsOverview' => Agent::select('id', 'name', 'status', 'current_tasks', 'max_capacity', 'capabilities')
+                ->latest()
+                ->take(10)
+                ->get(),
         ]);
     })->name('dashboard');
 
