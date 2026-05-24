@@ -16,6 +16,14 @@
                         <span class="hidden sm:inline">创建任务</span>
                         <span class="sm:hidden">创建</span>
                     </Link>
+                    <button
+                        @click="exportCSV"
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors flex-shrink-0"
+                    >
+                        <span class="mr-1.5">⬇</span>
+                        <span class="hidden sm:inline">导出 CSV</span>
+                        <span class="sm:hidden">CSV</span>
+                    </button>
                 </div>
 
                 <!-- 搜索 -->
@@ -294,6 +302,34 @@ async function deleteTask(task) {
     } catch (e) {
         alert('网络错误，请重试')
     }
+}
+
+function exportCSV() {
+    const tasks = props.tasks.data || []
+    if (tasks.length === 0) {
+        alert('没有可导出的任务')
+        return
+    }
+
+    const headers = ['ID','标题','类型','优先级','状态','Agent','创建时间']
+    const rows = tasks.map(t => [
+        t.id,
+        '"' + (t.title || '').replace(/"/g, '""') + '"',
+        t.type || '',
+        t.priority || '',
+        t.status || '',
+        '"' + (t.agent?.name || '') + '"',
+        t.created_at || ''
+    ])
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '任务列表_' + new Date().toISOString().slice(0, 10) + '.csv'
+    a.click()
+    URL.revokeObjectURL(url)
 }
 
 function formatDate(dateStr) {
