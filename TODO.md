@@ -6,99 +6,48 @@
 
 ## 🏗 架构说明
 
-当前使用 **Inertia.js 全栈架构**，Vue 前端代码在 `backend/resources/js/` 内，由 Laravel 直接渲染。这不是前后端分离架构。
-
-**后续可考虑重构为前后端分离：** 将前端拆为独立 Vite 项目，使用 Vue Router + Axios + Laravel Sanctum（JWT 认证）。但建议待 MVP 功能稳定后再做。
+当前使用 **Inertia.js 全栈架构**，Vue 前端代码在 `backend/resources/js/` 内，由 Laravel 直接渲染。虽然不是前后端分离架构，但在 MVP 阶段开发效率高。后续可考虑拆分为独立前端项目。
 
 ---
 
-## Sprint 0: 项目初始化 ✅
+## ✅ 已完成 Sprint
 
-| # | 任务 | 负责人 | 状态 | 提交 |
-|---|------|--------|------|------|
-| 0.1 | Docker 开发环境 (PHP 8.3 + PG + Redis + Node) | Coordinator | ✅ | `7a9fe72` |
-| 0.2 | Laravel 11 后端初始化 + Inertia.js + Reverb | Coordinator | ✅ | `67a96d0` |
-| 0.3 | Vue 3 + Tailwind CSS v4 前端初始化 | Coordinator | ✅ | `6f3bf25` |
-| 0.4 | 数据库设计 (agents/tasks/messages) + Eloquent 模型 | Coordinator | ✅ | `fe9f8f6` |
-| 0.5 | 项目 README 文档 | Coordinator | ✅ | `f094294` |
-
----
-
-## Sprint 1: Agent 管理功能 ✅
-
-| # | 任务 | 负责人 | 状态 | PR |
-|---|------|--------|------|-----|
-| 1.1 | Agent CRUD API (Controller + Resource + Request) | Agent-B | ✅ | #1 |
-| 1.2 | Agent 列表页 (状态筛选 + 表格展示) | Agent-F | ✅ | #2 |
-| 1.3 | Agent 创建页 (表单 + 能力标签多选) | Agent-F | ✅ | #2 |
-| 1.4 | Agent 详情页 | Agent-F | ✅ | #2 |
-| 1.5 | Dashboard 添加 Agent 管理入口 | Agent-F | ✅ | #2 |
-| 1.6 | 修复: 前后端集成问题 (路由 + API 路径) | Coordinator | ✅ | - |
-| 1.7 | 修复: Agent 列表页白屏 (prop default) | Coordinator | ✅ | - |
+| Sprint | 内容 | 进度 |
+|--------|------|------|
+| Sprint 0 | 项目初始化 (Docker + Laravel + Vue3 + 数据库) | 100% |
+| Sprint 1 | Agent 管理 (CRUD API + 页面) | 100% |
+| Sprint 2 | 任务管理 (CRUD + 指派 + 状态流转 + 页面) | 100% |
+| Sprint 3 | 消息聚合与实时推送 (消息API + WebSocket + 面板) | 100% |
+| Sprint 4 | 优化完善 (用户认证 + 响应式 + Toast + Dashboard) | 100% |
+| Sprint 5 | 高级功能 (Agent Worker + 心跳 + 超时 + 测试 + 自动指派) | 90% |
 
 ---
 
-## Sprint 2: 任务管理功能 ✅
+## 🎯 Sprint 6: 功能查漏补缺（当前推进）
 
-| # | 任务 | 负责人 | 状态 | PR |
-|---|------|--------|------|-----|
-| 2.1 | Task CRUD API + 指派 + 状态流转 | Agent-B | ✅ | #3 |
-| 2.2 | 任务列表页 (按状态分组 + 筛选) | Agent-F | ✅ | #4 |
-| 2.3 | 任务创建页 (标题/描述/类型/优先级) | Agent-F | ✅ | #4 |
-| 2.4 | 任务详情页 (指派 Agent + 状态操作) | Agent-F | ✅ | #4 |
-| 2.5 | Dashboard 激活任务管理入口 | Agent-F | ✅ | #4 |
-| 2.6 | AppLayout 导航栏新增任务管理 | Agent-F | ✅ | #4 |
-| 2.7 | 修复: PR #3 review 修复 (8 项) | Agent-B | ✅ | - |
-
----
-
-## Sprint 3: 消息聚合与实时推送 ✅
-
-| # | 任务 | 负责人 | 状态 | PR |
-|---|------|--------|------|----|
-| 3.1 | 消息 API (MessageController + Resource) | Agent-B | ✅ | #9 |
-| 3.2 | WebSocket 广播事件 (TaskStatusChanged + MessageSent) | Agent-B | ✅ | #9 |
-| 3.3 | 私有频道授权 (channels.php) | Agent-B | ✅ | #9 |
-| 3.4 | 消息聚合面板组件 (MessagePanel.vue) | Agent-F | ✅ | `b6314b1` |
-| 3.5 | 活动日志组件 (ActivityLog.vue) | Agent-F | ✅ | `b6314b1` |
-| 3.6 | 任务详情页集成消息面板 | Agent-F | ✅ | `b6314b1` |
-| 3.7 | Dashboard 集成活动日志 | Agent-F | ✅ | `b6314b1` |
-
-## Sprint 4: 优化与完善 ⏳
-
-| # | 任务 | 负责人 | 状态 | 优先级 |
-|---|------|--------|------|--------|
-| 4.1 | 用户认证系统 (登录/注册/登出) | Agent-B | ✅ | P0 |
-| 4.2 | Agent 自动指派策略 (按能力 + 负载均衡) | Agent-B | ✅ | - |
-| 4.3 | WebSocket 前端实时集成 (Echo + Reverb) | Agent-F | ⏳ | P1 |
-|| 4.4 | 单元测试 (PHPUnit + Pest) | Agent-B | ✅ | P1 |
-| 4.5 | UI/UX 优化 (响应式 + Toast 通知) | Agent-F | ✅ | P2 |
-| 4.6 | 国际化 (i18n 中英文切换) | Agent-F | ⏳ | P2 |
-| 4.7 | CI/CD (GitHub Actions 自动测试 + 部署) | Coordinator | ⏳ | P2 |
-|| 4.8 | API 文档 (API.md) | Agent-B | ✅ | P3 |
+| # | 任务 | 类型 | 优先级 | 状态 |
+|---|------|------|--------|------|
+| 6.1 | **Agent 删除按钮** — 列表页 + 详情页，含智能保护提示（有关联任务阻止删除） | 前端 | 🔴 P0 | ⏳ |
+| 6.2 | **任务删除按钮** — 列表页 + 详情页，含状态校验提示（进行中任务阻止删除） | 前端 | 🔴 P0 | ⏳ |
+| 6.3 | **任务自动指派** — 详情页一键调用 auto-assign API | 前端 | 🔴 P0 | ⏳ |
+| 6.4 | **Agent 搜索** — 列表页按名称/能力搜索 | 前端 | 🟡 P1 | ⏳ |
+| 6.5 | **任务搜索** — 列表页按标题/类型筛选 | 前端 | 🟡 P1 | ⏳ |
+| 6.6 | **忘记密码** — 密码重置流程 | 全栈 | 🟡 P2 | ⏳ |
+| 6.7 | **Dashboard 负载概览** — 各 Agent 工作负载可视化 | 前端 | 🟡 P2 | ⏳ |
+| 6.8 | **API 调用统一** — 清理 fetch/Inertia 混用 | 前端 | 🟢 P3 | ⏳ |
 
 ---
 
-## Sprint 5: 高级功能 ⏳
-
-| # | 任务 | 负责人 | 状态 | 优先级 |
-|---|------|--------|------|--------|
-| 5.1 | Agent 心跳检测 (自动上线/下线) | Agent-B | ✅ | - |
-|| 5.2 | 任务超时自动失败 | Agent-B | ✅ | - |
-|| 5.3 | 消息通知 (浏览器通知 + 邮件) | Agent-F | ⏳ | P2 |
-| 5.4 | 数据统计面板 (任务完成率/Agent 效率) | Agent-F | ⏳ | P2 |
-| 5.5 | 任务模板 (常用任务快速创建) | Agent-F | ⏳ | P3 |
-|| 5.6 | Agent Worker（自动拉取任务 + 调 LLM 处理） | Agent-B | ✅ | P0 |
-
----
-
-## Sprint 6: 架构优化 (未来计划)
+## 📋 Sprint 7: 体验增强（后续计划）
 
 | # | 任务 | 说明 | 优先级 |
 |---|------|------|--------|
-| 6.1 | 前后端拆分 | 前端独立为 Vite 项目，Vue Router 替代 Inertia | P3 |
-| 6.2 | JWT 认证 | Laravel Sanctum Token 替代 Session | P3 |
-| 6.3 | CORS 配置 | 前端独立部署时的跨域配置 | P3 |
+| 7.1 | 用户管理页面 | 查看/管理注册用户 | P2 |
+| 7.2 | Agent 处理日志页 | Agent Worker 执行记录可视化 | P2 |
+| 7.3 | 数据导出 (CSV/Excel) | 任务列表和统计导出 | P3 |
+| 7.4 | 任务模板 | 常用任务快速创建 | P3 |
+| 7.5 | 前后端拆分 | 前端独立为 Vite 项目 | P3 |
+| 7.6 | 国际化 i18n | 中英文切换 | P3 |
 
 ---
 
@@ -109,10 +58,9 @@ Sprint 0 (初始化):       █████████████████�
 Sprint 1 (Agent 管理):   ████████████████████ 100% ✅
 Sprint 2 (任务管理):     ████████████████████ 100% ✅
 Sprint 3 (消息推送):     ████████████████████ 100% ✅
-Sprint 4a (UI 优化):     ████████████████████ 100% ✅
-Sprint 4b (用户认证):    ████████████████████ 100% ✅
-Sprint 4c (Dashboard):    ████████████████████ 100% ✅
-Sprint 5 (高级功能):     ████████████████░░░░  60% 🟡
+Sprint 4 (优化完善):     ████████████████████ 100% ✅
+Sprint 5 (高级功能):     ██████████████████░░  90% ✅
+Sprint 6 (查漏补缺):     █████░░░░░░░░░░░░░░░  10% 🟡
 ```
 
-**MVP 完成度: 90%** (核心功能闭环，可实际使用)
+**MVP 完成度: 90%** — 核心功能已闭环，正在查漏补缺阶段
