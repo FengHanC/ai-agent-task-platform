@@ -125,7 +125,7 @@ import { Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
 const props = defineProps({
-    tasks: { type: Array, default: () => [] },
+    tasks: { type: Object, default: () => ({ data: [] }) },
 })
 
 const search = ref('')
@@ -160,7 +160,7 @@ const statusGroups = reactive([
         dotColor: 'bg-yellow-400',
         headerBg: '',
         emptyText: '暂无待处理任务',
-        tasks: computed(() => props.tasks.filter(t => t.status === 'pending')),
+        tasks: computed(() => props.tasks.data.filter(t => t.status === 'pending')),
         filteredTasks: computed(() => {
             const g = statusGroups[0]
             return g.tasks.filter(t => {
@@ -178,7 +178,7 @@ const statusGroups = reactive([
         dotColor: 'bg-blue-400',
         headerBg: '',
         emptyText: '暂无进行中的任务',
-        tasks: computed(() => props.tasks.filter(t => t.status === 'processing')),
+        tasks: computed(() => props.tasks.data.filter(t => t.status === 'processing')),
         filteredTasks: computed(() => {
             const g = statusGroups[1]
             return g.tasks.filter(t => {
@@ -196,7 +196,7 @@ const statusGroups = reactive([
         dotColor: 'bg-green-400',
         headerBg: '',
         emptyText: '暂无已完成任务',
-        tasks: computed(() => props.tasks.filter(t => t.status === 'completed')),
+        tasks: computed(() => props.tasks.data.filter(t => t.status === 'completed')),
         filteredTasks: computed(() => {
             const g = statusGroups[2]
             return g.tasks.filter(t => {
@@ -214,7 +214,7 @@ const statusGroups = reactive([
         dotColor: 'bg-red-400',
         headerBg: '',
         emptyText: '暂无失败任务',
-        tasks: computed(() => props.tasks.filter(t => t.status === 'failed')),
+        tasks: computed(() => props.tasks.data.filter(t => t.status === 'failed')),
         filteredTasks: computed(() => {
             const g = statusGroups[3]
             return g.tasks.filter(t => {
