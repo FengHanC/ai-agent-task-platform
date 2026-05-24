@@ -14,7 +14,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                             <div class="flex items-start space-x-3">
                                 <span class="text-2xl sm:text-3xl flex-shrink-0">{{ typeIcon }}</span>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <h1 class="text-xl sm:text-2xl font-bold text-gray-900 break-words">{{ task.title }}</h1>
                                         <span :class="priorityBadge(task.priority)">{{ priorityLabel(task.priority) }}</span>
@@ -24,6 +24,12 @@
                                         <span class="text-xs sm:text-sm text-gray-400">创建于 {{ formatDate(task.created_at) }}</span>
                                     </div>
                                 </div>
+                                <Link
+                                    :href="`/tasks/${task.id}/edit`"
+                                    class="flex-shrink-0 text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 px-2.5 py-1 rounded-lg hover:bg-gray-200"
+                                >
+                                    编辑
+                                </Link>
                             </div>
                         </div>
                     </div>

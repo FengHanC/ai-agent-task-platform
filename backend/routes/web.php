@@ -168,4 +168,11 @@ Route::middleware('auth')->group(function () {
                 ->get(),
         ]);
     })->name('tasks.show');
+
+    Route::get('/tasks/{task}/edit', function (Task $task) {
+        $task->load('agent');
+        return Inertia::render('Tasks/Edit', [
+            'task' => $task,
+        ]);
+    })->name('tasks.edit');
 });
