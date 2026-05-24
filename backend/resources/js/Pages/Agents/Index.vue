@@ -108,9 +108,17 @@
                                     {{ formatDate(agent.created_at) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                    <Link :href="`/agents/${agent.id}`" class="text-indigo-600 hover:text-indigo-800 font-medium">
-                                        详情
-                                    </Link>
+                                    <div class="flex items-center justify-end space-x-3">
+                                        <Link :href="`/agents/${agent.id}`" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                            详情
+                                        </Link>
+                                        <button
+                                            @click="deleteAgent(agent)"
+                                            class="text-red-500 hover:text-red-700 font-medium text-sm"
+                                        >
+                                            删除
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="agents.data.length === 0">
@@ -153,12 +161,20 @@
                                 >
                                     {{ toggling[agent.id] ? '...' : (agent.status === 'online' ? '下线' : '上线') }}
                                 </button>
-                                <Link
-                                    :href="`/agents/${agent.id}`"
-                                    class="text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-2.5 py-1 rounded-lg"
-                                >
-                                    详情
-                                </Link>
+                                <div class="flex items-center space-x-1.5">
+                                    <button
+                                        @click="deleteAgent(agent)"
+                                        class="text-xs text-red-500 hover:text-red-700 font-medium bg-red-50 px-2 py-1 rounded-lg"
+                                    >
+                                        删除
+                                    </button>
+                                    <Link
+                                        :href="`/agents/${agent.id}`"
+                                        class="text-xs text-indigo-600 hover:text-indigo-800 font-medium bg-indigo-50 px-2.5 py-1 rounded-lg"
+                                    >
+                                        详情
+                                    </Link>
+                                </div>
                             </div>
                         </div>
 
@@ -278,6 +294,26 @@ function formatDate(dateStr) {
     const d = new Date(dateStr)
     const pad = n => String(n).padStart(2, '0')
     return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+async function deleteAgent(agent) {
+    const busy = agent.current_tasks > 0
+    const msg = busy
+        ? `Agent "${agent.name}" 当前有 ${agent.current_tasks} 个任务，确定删除？`
+        : `确定删除 Agent "${agent.name}"？此操作不可恢复。`
+    if (!confirm(msg)) return
+
+    try {
+        const res = await fetch(`/api/v1/agents/${agent.id}`, { method: 'DELETE' })
+        if (!res.ok) {
+            const data = await res.json()
+            alert(data.message || '删除失败')
+            return
+        }
+        window.location.reload()
+    } catch (e) {
+        alert('网络错误，请重试')
+    }
 }
 
 function filterByStatus(status) {

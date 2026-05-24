@@ -38,6 +38,12 @@
                                 >
                                     编辑
                                 </Link>
+                                <button
+                                    @click="deleteAgent"
+                                    class="text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 px-2.5 py-1 rounded-lg hover:bg-red-100"
+                                >
+                                    删除
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -218,6 +224,23 @@ function statusBadgeClass(status) {
         busy: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200',
     }
     return map[status] || map.offline
+}
+
+async function deleteAgent() {
+    const name = props.agent.name
+    if (!confirm(`确定删除 Agent "${name}"？${props.agent.current_tasks > 0 ? ' 当前有任务进行中。' : ''}`)) return
+
+    try {
+        const res = await fetch(`/api/v1/agents/${props.agent.id}`, { method: 'DELETE' })
+        if (!res.ok) {
+            const data = await res.json()
+            alert(data.message || '删除失败')
+            return
+        }
+        window.location.href = '/agents'
+    } catch (e) {
+        alert('网络错误，请重试')
+    }
 }
 
 function typeIcon(type) {

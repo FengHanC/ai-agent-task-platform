@@ -30,6 +30,19 @@
                                 >
                                     编辑
                                 </Link>
+                                <button
+                                    @click="autoAssign"
+                                    :disabled="autoAssigning"
+                                    class="text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-lg hover:bg-indigo-100"
+                                >
+                                    {{ autoAssigning ? '指派中...' : '自动指派' }}
+                                </button>
+                                <button
+                                    @click="deleteTask"
+                                    class="text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 px-2.5 py-1 rounded-lg hover:bg-red-100"
+                                >
+                                    删除
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -194,6 +207,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+const autoAssigning = ref(false)
 import { Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import MessagePanel from '@/Components/MessagePanel.vue'
@@ -339,6 +353,56 @@ function agentStatusBadge(status) {
         busy: 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200',
     }
     return map[status] || map.offline
+}
+
+async function autoAssign() {
+    if (autoAssigning.value) return
+    autoAssigning.value = true
+
+    try {
+        const res = await fetch('/api/v1/tasks/' + props.task.id + '/auto-assign', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+
+        if (!res.ok) {
+            const data = await res.json()
+            toastError(data.message || '\u81ea\u52a8\u6307\u6d3e\u5931\u8d25')
+            return
+        }
+
+        toastSuccess('\u5df2\u81ea\u52a8\u6307\u6d3e')
+        router.visit('/tasks/' + props.task.id, { preserveState: true })
+    } catch (e) {
+        toastError('\u7f51\u7edc\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5')
+    } finally {
+        autoAssigning.value = false
+    }
+}
+
+async function deleteTask() {
+    const forbidden = ['processing', 'completed']
+    if (forbidden.includes(props.task.status)) {
+        toastError('\u8fdb\u884c\u4e2d\u6216\u5df2\u5b8c\u6210\u7684\u4efb\u52a1\u4e0d\u80fd\u5220\u9664')
+        return
+    }
+    if (!confirm('\u786e\u5b9a\u5220\u9664\u4efb\u52a1\u201c' + props.task.title + '\u201d\uff1f')) return
+
+    try {
+        const res = await fetch('/api/v1/tasks/' + props.task.id, { method: 'DELETE' })
+        if (!res.ok) {
+            const data = await res.json()
+            toastError(data.message || '\u5220\u9664\u5931\u8d25')
+            return
+        }
+        window.location.href = '/tasks'
+    } catch (e) {
+        toastError('\u7f51\u7edc\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5')
+    }
 }
 
 function refreshMessages() {

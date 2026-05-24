@@ -251,6 +251,27 @@ function priorityBadge(priority) {
     return map[priority] || map.medium
 }
 
+async function deleteTask(task) {
+    const forbidden = ['processing', 'completed']
+    if (forbidden.includes(task.status)) {
+        alert('进行中或已完成的任务不能删除')
+        return
+    }
+    if (!confirm('确定删除任务“' + task.title + '”？')) return
+
+    try {
+        const res = await fetch('/api/v1/tasks/' + task.id, { method: 'DELETE' })
+        if (!res.ok) {
+            const data = await res.json()
+            alert(data.message || '删除失败')
+            return
+        }
+        window.location.reload()
+    } catch (e) {
+        alert('网络错误，请重试')
+    }
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return ''
     const d = new Date(dateStr)
