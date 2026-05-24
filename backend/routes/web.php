@@ -104,8 +104,16 @@ Route::middleware('auth')->group(function () {
         if (request('status') && request('status') !== 'all') {
             $query->where('status', request('status'));
         }
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
         return Inertia::render('Agents/Index', [
             'agents' => $query->latest()->paginate(15),
+            'filters' => request()->only(['status', 'search']),
         ]);
     })->name('agents.index');
 
